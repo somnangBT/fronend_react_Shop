@@ -1,15 +1,17 @@
-import React from 'react';
-import { useAuth } from '../AuthContext';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { useAuth } from "../AuthContext";
+import { Link } from "react-router-dom";
 
 const AuthStatus = () => {
-  const { isAuthenticated, user, logout } = useAuth();
+  const { user, logout } = useAuth();
 
   return (
     <div className="auth-status">
-      {isAuthenticated ? (
+      {user ? (
         <div className="user-status">
-          <span className="welcome-message">Welcome, {user?.name || 'User'}!</span>
+          <span className="welcome-message">
+            Welcome, {user.name || "User"}!
+          </span>
           <div className="auth-buttons">
             <Link to="/account" className="account-link">
               My Account

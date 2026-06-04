@@ -14,7 +14,7 @@ const About = () => {
                     <div className="about-badge">Est. 2025 • Phnom Penh</div>
                     <h2 className="about-title">
                         The Vision Behind
-                        <span className="about-title-accent" data-text="DeliciousEats">DeliciousEats</span>
+                        <span className="about-title-accent" data-text="Lucky Shop">Lucky Shop</span>
                     </h2>
                     <p className="about-subtitle">
                         Where futuristic cuisine meets innovative beverages for the digital generation
@@ -32,7 +32,7 @@ const About = () => {
                     
                     <div className="about-text-container">
                         <p className="about-text">
-                            Founded in the vibrant tech district of Phnom Penh, DeliciousEats began with a bold vision: to create a complete culinary experience where food, drinks, and craft beer merge with cutting-edge technology.
+                            Founded in the vibrant tech district of Phnom Penh, Lucky Shop began with a bold vision: to create a complete culinary experience where food, drinks, and craft beer merge with cutting-edge technology.
                         </p>
                         
                         <p className="about-text">
@@ -167,9 +167,9 @@ const About = () => {
                                 <img src="https://i.pinimg.com/736x/ed/0a/1e/ed0a1e01f31048314bbb5320acf9e813.jpg" alt="Team member" className="member-image" />
                             </div>
                             <div className="member-info">
-                                <h4 className="member-name">Thy Muoyhak</h4>
+                                <h4 className="member-name">Yorn somnang</h4>
                                 <p className="member-role">Programmer</p>
-                                <p className="member-bio">Visionary behind DeliciousEats, with 15+ years in culinary innovation</p>
+                                <p className="member-bio">Visionary behind Lucky Shop, with 15+ years in culinary innovation</p>
                             </div>
                         </div>
                         
@@ -179,7 +179,7 @@ const About = () => {
                                 <img src="https://i.pinimg.com/736x/ed/0a/1e/ed0a1e01f31048314bbb5320acf9e813.jpg" alt="Team member" className="member-image" />
                             </div>
                             <div className="member-info">
-                                <h4 className="member-name">Rin Sreynich</h4>
+                                <h4 className="member-name">Un pheasa</h4>
                                 <p className="member-role">Programmer</p>
                                 <p className="member-bio">Expert drink engineer creating our signature beverage profiles</p>
                             </div>
@@ -191,7 +191,7 @@ const About = () => {
                                 <img src="https://i.pinimg.com/736x/ed/0a/1e/ed0a1e01f31048314bbb5320acf9e813.jpg" alt="Team member" className="member-image" />
                             </div>
                             <div className="member-info">
-                                <h4 className="member-name">Cheoun Daro</h4>
+                                <h4 className="member-name">srouch srean </h4>
                                 <p className="member-role">Programmer</p>
                                 <p className="member-bio">Crafts our neuro-enhanced beers with cutting-edge brewing techniques</p>
                             </div>
@@ -202,9 +202,9 @@ const About = () => {
                                 <img src="https://i.pinimg.com/736x/ed/0a/1e/ed0a1e01f31048314bbb5320acf9e813.jpg" alt="Team member" className="member-image" />
                             </div>
                             <div className="member-info">
-                                <h4 className="member-name">Vuth Kunthy</h4>
+                                <h4 className="member-name">pan sothea</h4>
                                 <p className="member-role">Programmer</p>
-                                <p className="member-bio">Visionary behind DeliciousEats, with 15+ years in culinary innovation</p>
+                                <p className="member-bio">Visionary behind Lucky Shop, with 15+ years in culinary innovation</p>
                             </div>
                         </div>
                         
@@ -214,7 +214,7 @@ const About = () => {
                                 <img  src="https://i.pinimg.com/736x/ed/0a/1e/ed0a1e01f31048314bbb5320acf9e813.jpg" alt="Team member" className="member-image" />
                             </div>
                             <div className="member-info">
-                                <h4 className="member-name">Nheam Sokmean</h4>
+                                <h4 className="member-name">prak porsann</h4>
                                 <p className="member-role">Programmer</p>
                                 <p className="member-bio">Expert drink engineer creating our signature beverage profiles</p>
                             </div>
@@ -225,7 +225,7 @@ const About = () => {
                                 <img  src="https://i.pinimg.com/736x/ed/0a/1e/ed0a1e01f31048314bbb5320acf9e813.jpg" alt="Team member" className="member-image" />
                             </div>
                             <div className="member-info">
-                                <h4 className="member-name">Nheam Sokmean</h4>
+                                <h4 className="member-name">Nhanh kimson</h4>
                                 <p className="member-role">Programmer</p>
                                 <p className="member-bio">Expert drink engineer creating our signature beverage profiles</p>
                             </div>

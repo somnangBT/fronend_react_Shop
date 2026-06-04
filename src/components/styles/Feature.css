@@ -109,6 +109,7 @@ body {
   filter: blur(80px);
   opacity: 0.2;
   z-index: 1;
+  pointer-events: none;
 }
 
 .features-section .glow-orb-1 {

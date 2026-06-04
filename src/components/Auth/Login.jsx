@@ -106,12 +106,12 @@ const Login = () => {
         return;
       }
 
-      // Mock password check (insecure, for demo only)
-      // In production, use POST /api/login for server-side password verification
+      // Create user data with role from backend
       const userData = {
         id: user.id,
         email: user.email,
         name: user.name,
+        role: user.role || 'user', // Include role from backend (admin/user)
         token: user.remember_token || 'token_placeholder'
       };
 
@@ -123,9 +123,20 @@ const Login = () => {
         sessionStorage.setItem('user', JSON.stringify(userData));
       }
 
-      showNotification('Login successful!', 'success');
+      // Check role after login and show appropriate message
+      if (userData.role === 'admin') {
+        showNotification('Welcome Admin! Login successful!', 'success');
+      } else {
+        showNotification('Login successful!', 'success');
+      }
+
       setTimeout(() => {
-        navigate(from, { replace: true });
+        // Redirect based on role
+        if (userData.role === 'admin') {
+          navigate('/admin', { replace: true }); // Admin dashboard
+        } else {
+          navigate(from, { replace: true }); // Normal user redirect
+        }
       }, 1500);
     } catch (err) {
       console.error('Login error:', err);

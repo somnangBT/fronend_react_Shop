@@ -1,48 +1,49 @@
-/* CardProduct.css - Cyberpunk Neon Dark Theme */
+/* CardProduct.css - Lucky Shop Warm Theme */
 
-/* Import Space Grotesk font to match hero section style */
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+/* Import Poppins font for modern shop style */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  /* Core colors - matching Hero.css */
-  --neon-primary: #00f5ff;
-  --neon-secondary: #ff00ea;
-  --neon-accent: #fffc00;
-  --neon-green: #39ff14;
-  --neon-red: #ff0a54;
+  /* Lucky Shop Colors */
+  --primary-color: #ff6b35;
+  --secondary-color: #f7c59f;
+  --accent-color: #2ec4b6;
+  --accent-light: #cbf3f0;
+  --success-color: #10b981;
+  --danger-color: #ef4444;
   
   /* Background colors */
-  --dark-bg: #09090b;
-  --card-bg: #18181b;
-  --card-highlight: #27272a;
+  --dark-bg: #1a1a2e;
+  --darker-bg: #16213e;
+  --card-bg: rgba(26, 26, 46, 0.95);
+  --card-highlight: rgba(255, 107, 53, 0.1);
   
   /* Text colors */
   --text-bright: #ffffff;
-  --text-primary: #e4e4e7;
-  --text-secondary: #a1a1aa;
-  --text-muted: #52525b;
+  --text-primary: #f8f9fa;
+  --text-secondary: #b2bec3;
+  --text-muted: #636e72;
   
   /* Glow effects */
-  --glow-primary: 0 0 10px rgba(0, 245, 255, 0.5), 0 0 20px rgba(0, 245, 255, 0.3);
-  --glow-secondary: 0 0 10px rgba(255, 0, 234, 0.5), 0 0 20px rgba(255, 0, 234, 0.3);
-  --glow-accent: 0 0 10px rgba(255, 252, 0, 0.5), 0 0 20px rgba(255, 252, 0, 0.3);
-  --glow-green: 0 0 10px rgba(57, 255, 20, 0.5), 0 0 20px rgba(57, 255, 20, 0.3);
-  --glow-red: 0 0 10px rgba(255, 10, 84, 0.5), 0 0 20px rgba(255, 10, 84, 0.3);
+  --glow-primary: 0 0 20px rgba(255, 107, 53, 0.4), 0 0 40px rgba(255, 107, 53, 0.2);
+  --glow-accent: 0 0 20px rgba(46, 196, 182, 0.4), 0 0 40px rgba(46, 196, 182, 0.2);
+  --glow-success: 0 0 20px rgba(16, 185, 129, 0.4);
+  --glow-danger: 0 0 20px rgba(239, 68, 68, 0.4);
   
   /* Borders and shadows */
-  --card-border: 1px solid #27272a;
-  --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.8);
-  --card-hover-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.9);
+  --card-border: 1px solid rgba(255, 107, 53, 0.15);
+  --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  --card-hover-shadow: 0 20px 60px rgba(255, 107, 53, 0.15);
   
   /* Transitions */
-  --transition-fast: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-  --transition-normal: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  --transition-slow: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  --transition-fast: all 0.2s ease;
+  --transition-normal: all 0.3s ease;
+  --transition-slow: all 0.5s ease;
   
   /* Border radius */
-  --border-radius-sm: 4px;
-  --border-radius: 8px;
-  --border-radius-lg: 12px;
+  --border-radius-sm: 8px;
+  --border-radius: 12px;
+  --border-radius-lg: 20px;
   
   /* Product section dimensions */
   --section-padding: 100px 0;
@@ -57,20 +58,20 @@
 }
 
 body {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Poppins', sans-serif;
   background-color: var(--dark-bg);
   color: var(--text-primary);
 }
 
 /* Products section */
 .products-section {
-  background-color: var(--dark-bg);
+  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
   position: relative;
   overflow: hidden;
   padding: var(--section-padding);
 }
 
-/* Grid overlay - matching Hero.css */
+/* Grid overlay - decorative pattern */
 .products-section::before {
   content: '';
   position: absolute;
@@ -79,13 +80,13 @@ body {
   right: 0;
   bottom: 0;
   background-image: 
-    linear-gradient(to right, rgba(39, 39, 42, 0.3) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(39, 39, 42, 0.3) 1px, transparent 1px);
-  background-size: 40px 40px;
+    radial-gradient(circle at 20% 30%, rgba(255, 107, 53, 0.1) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(46, 196, 182, 0.1) 0%, transparent 40%);
   z-index: 1;
+  pointer-events: none;
 }
 
-/* Scan line effect - matching Hero.css */
+/* Decorative pattern overlay */
 .products-section::after {
   content: '';
   position: absolute;
@@ -93,15 +94,11 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    to bottom,
-    transparent 50%,
-    rgba(0, 0, 0, 0.02) 50%
-  );
-  background-size: 100% 4px;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ff6b35' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   z-index: 1;
   pointer-events: none;
-  opacity: 0.3;
+  opacity: 0.5;
 }
 
 /* Container */
@@ -164,7 +161,7 @@ body {
 
 .category-btn {
   background: var(--card-bg);
-  border: 1px solid var(--card-highlight);
+  border: 1px solid rgba(255, 107, 53, 0.2);
   color: var(--text-secondary);
   font-size: 0.9rem;
   font-weight: 500;
@@ -176,7 +173,7 @@ body {
   letter-spacing: 1px;
   position: relative;
   overflow: hidden;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 
 .category-btn::before {
@@ -186,15 +183,15 @@ body {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0, 245, 255, 0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 107, 53, 0.15), transparent);
   transition: var(--transition-normal);
 }
 
 .category-btn:hover {
-  color: var(--neon-primary);
-  border-color: var(--neon-primary);
+  color: var(--primary-color);
+  border-color: var(--primary-color);
   transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 25px rgba(255, 107, 53, 0.2);
 }
 
 .category-btn:hover::before {
@@ -203,10 +200,10 @@ body {
 }
 
 .category-btn.active {
-  background: var(--card-highlight);
-  color: var(--neon-primary);
-  border-color: var(--neon-primary);
-  box-shadow: 0 0 10px rgba(0, 245, 255, 0.2);
+  background: linear-gradient(135deg, var(--primary-color) 0%, #f7931e 100%);
+  color: var(--text-bright);
+  border-color: var(--primary-color);
+  box-shadow: 0 5px 20px rgba(255, 107, 53, 0.3);
 }
 
 /* Products grid */
@@ -221,7 +218,7 @@ body {
 .product-card {
   background: var(--card-bg);
   border-radius: var(--border-radius);
-  border: var(--card-border);
+  border: 1px solid rgba(255, 107, 53, 0.1);
   overflow: hidden;
   position: relative;
   box-shadow: var(--card-shadow);

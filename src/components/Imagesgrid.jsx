@@ -1,4 +1,5 @@
-import "./styles/Imagesgrid.css"
+import React from 'react';
+import "./styles/Imagesgrid.css";
 
 const Imagesgrid = () => {
     return (

@@ -2,17 +2,20 @@
 
 .products-page {
   min-height: 100vh;
+  position: relative;
+  z-index: 1;
 }
 
 /* Hero section for products page */
 .products-hero {
   position: relative;
-  height: 300px;
+  height: 220px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   margin-bottom: 2rem;
+  z-index: 1;
 }
 
 .products-hero-overlay {
@@ -31,6 +34,7 @@
   background-size: cover;
   background-position: center;
   z-index: 1;
+  pointer-events: none;
 }
 
 .products-hero::before {
@@ -46,6 +50,7 @@
   background-size: 40px 40px;
   z-index: 2;
   opacity: 0.5;
+  pointer-events: none;
 }
 
 .products-hero-content {

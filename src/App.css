@@ -2,6 +2,19 @@
   text-align: center;
 }
 
+/* App wrapper */
+.app {
+  position: relative;
+  min-height: 100vh;
+}
+
+/* Main content wrapper - accounts for fixed navbar */
+.main-content {
+  position: relative;
+  z-index: 1;
+  padding-top: 80px; /* Same as navbar height */
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;

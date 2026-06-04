@@ -1,7 +1,6 @@
-import { useState } from 'react';
-import emailjs from '@emailjs/browser';
+import React, { useState } from 'react';
 import "./styles/Contact.css";
- 
+
 const Contact = () => {
     const [formData, setFormData] = useState({
         name: '',
@@ -26,32 +25,22 @@ const Contact = () => {
         setIsSubmitting(true);
         
         try {
-            // Using the provided EmailJS template and service IDs
-            const result = await emailjs.send(
-                '',        // Your service ID
-                '',         // Your template ID
-                {
-                    from_name: formData.name,
-                    from_email: formData.email,
-                    subject: formData.subject || 'Contact Form Submission',
-                    message: formData.message,
-                    to_email: 'example@gmail.com'
-                },
-                ''          // Your public key / user ID
-            );
+            // Create mailto link with form data
+            const mailtoLink = `mailto:younsomnang4@gmail.com?subject=${encodeURIComponent(formData.subject || 'Contact Form Submission')}&body=${encodeURIComponent(
+                `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
+            )}`;
             
-            if (result.text === 'OK') {
-                setSubmitStatus('success');
-                // Reset form after successful submission
-                setFormData({
-                    name: '',
-                    email: '',
-                    subject: '',
-                    message: ''
-                });
-            } else {
-                throw new Error('Failed to send message');
-            }
+            // Open email client
+            window.location.href = mailtoLink;
+            
+            setSubmitStatus('success');
+            // Reset form after successful submission
+            setFormData({
+                name: '',
+                email: '',
+                subject: '',
+                message: ''
+            });
         } catch (error) {
             console.error('Error sending email:', error);
             setSubmitStatus('error');
@@ -234,7 +223,7 @@ const Contact = () => {
                             <div className="info-content">
                                 <h4 className="info-title">Contact</h4>
                                 <p className="info-text">Phone: +855 (0) 969 420 333</p>
-                                <p className="info-text">Email: thymuoyhak.biu@gmail.com</p>
+                                <p className="info-text">Email: younsomnang4@gmail.com</p>
                             </div>
                         </div>
                         

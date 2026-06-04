@@ -48,7 +48,7 @@ const Navbar = () => {
       <div className="nav-glow-orb nav-glow-1"></div>
       <div className="nav-container">
         <div className="nav-logo">
-          <Link to="/">Delicious<span>Eats</span></Link>
+          <Link to="/">Lucky<span>Shop</span></Link>
         </div>
 
         <nav className={`nav-links ${isMobileMenuOpen ? 'nav-active' : ''}`}>

@@ -1,46 +1,43 @@
-/* Navbar.css - Cyberpunk Neon Dark Theme */
+/* Navbar.css - Lucky Shop Warm Theme */
 
-/* Import Space Grotesk font to match hero section style */
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+/* Import Poppins font for modern shop style */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  /* Core colors - matching Hero.css */
-  --neon-primary: #00f5ff;
-  --neon-secondary: #ff00ea;
-  --neon-accent: #fffc00;
-  --neon-green: #39ff14;
-  --neon-red: #ff0a54;
+  /* Lucky Shop Colors */
+  --primary-color: #ff6b35;
+  --secondary-color: #f7c59f;
+  --accent-color: #2ec4b6;
+  --accent-light: #cbf3f0;
   
   /* Background colors */
-  --dark-bg: #09090b;
-  --card-bg: #18181b;
-  --card-highlight: #27272a;
+  --dark-bg: #1a1a2e;
+  --darker-bg: #16213e;
+  --card-bg: rgba(26, 26, 46, 0.9);
   
   /* Text colors */
   --text-bright: #ffffff;
-  --text-primary: #e4e4e7;
-  --text-secondary: #a1a1aa;
-  --text-muted: #52525b;
+  --text-primary: #f8f9fa;
+  --text-secondary: #b2bec3;
+  --text-muted: #636e72;
   
   /* Glow effects */
-  --glow-primary: 0 0 10px rgba(0, 245, 255, 0.5), 0 0 20px rgba(0, 245, 255, 0.3);
-  --glow-secondary: 0 0 10px rgba(255, 0, 234, 0.5), 0 0 20px rgba(255, 0, 234, 0.3);
-  --glow-accent: 0 0 10px rgba(255, 252, 0, 0.5), 0 0 20px rgba(255, 252, 0, 0.3);
+  --glow-primary: 0 0 20px rgba(255, 107, 53, 0.4), 0 0 40px rgba(255, 107, 53, 0.2);
+  --glow-accent: 0 0 20px rgba(46, 196, 182, 0.4), 0 0 40px rgba(46, 196, 182, 0.2);
   
   /* Borders and shadows */
-  --card-border: 1px solid #27272a;
-  --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.8);
-  --card-hover-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.9);
+  --card-border: 1px solid rgba(255, 107, 53, 0.2);
+  --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   
   /* Transitions */
-  --transition-fast: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-  --transition-normal: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  --transition-slow: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  --transition-fast: all 0.2s ease;
+  --transition-normal: all 0.3s ease;
+  --transition-slow: all 0.5s ease;
   
   /* Border radius */
-  --border-radius-sm: 4px;
-  --border-radius: 8px;
-  --border-radius-lg: 12px;
+  --border-radius-sm: 8px;
+  --border-radius: 12px;
+  --border-radius-lg: 20px;
   
   /* Navbar dimensions */
   --navbar-height: 80px;
@@ -55,19 +52,21 @@
   left: 0;
   width: 100%;
   height: var(--navbar-height);
-  background-color: rgba(9, 9, 11, 0.7);
-  backdrop-filter: blur(10px);
-  z-index: 1000;
+  background: linear-gradient(180deg, rgba(26, 26, 46, 0.95) 0%, rgba(22, 33, 62, 0.9) 100%);
+  backdrop-filter: blur(15px);
+  z-index: 9999;
   transition: var(--transition-normal);
+  border-bottom: 1px solid rgba(255, 107, 53, 0.1);
 }
 
 .navbar.scrolled {
   height: var(--navbar-height-scrolled);
-  background-color: rgba(9, 9, 11, 0.85);
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(180deg, rgba(26, 26, 46, 0.98) 0%, rgba(22, 33, 62, 0.95) 100%);
+  box-shadow: 0 5px 30px rgba(255, 107, 53, 0.15);
+  border-bottom: 1px solid rgba(255, 107, 53, 0.2);
 }
 
-/* Grid overlay - matching Hero.css */
+/* Grid overlay - subtle pattern */
 .nav-grid-overlay {
   position: absolute;
   top: 0;
@@ -75,11 +74,11 @@
   right: 0;
   bottom: 0;
   background-image: 
-    linear-gradient(to right, rgba(39, 39, 42, 0.3) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(39, 39, 42, 0.3) 1px, transparent 1px);
-  background-size: 40px 40px;
-  opacity: 0.3;
+    radial-gradient(circle at 20% 50%, rgba(255, 107, 53, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 50%, rgba(46, 196, 182, 0.05) 0%, transparent 50%);
+  opacity: 0.8;
   z-index: 1;
+  pointer-events: none;
 }
 
 /* Background glow orb */
@@ -87,8 +86,9 @@
   position: absolute;
   border-radius: 50%;
   filter: blur(60px);
-  opacity: 0.15;
+  opacity: 0.2;
   z-index: 1;
+  pointer-events: none;
 }
 
 .nav-glow-1 {
@@ -96,8 +96,13 @@
   left: 30%;
   width: 40vw;
   height: 40vw;
-  background: rgba(0, 245, 255, 0.15);
+  background: rgba(255, 107, 53, 0.2);
   animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(10px); }
 }
 
 /* Container */
@@ -132,14 +137,13 @@
 }
 
 .nav-logo a:hover {
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  text-shadow: 0 0 15px rgba(255, 107, 53, 0.4);
 }
 
 .nav-logo span {
-  color: var(--neon-primary);
+  color: var(--primary-color);
   text-shadow: var(--glow-primary);
   position: relative;
-  animation: flicker 10s linear infinite;
 }
 
 /* Nav Links */
@@ -354,6 +358,7 @@
   );
   opacity: 0.6;
   z-index: 3;
+  pointer-events: none;
 }
 
 /* Animations */

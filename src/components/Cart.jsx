@@ -304,7 +304,7 @@ const Cart = () => {
               </p>
               <div className="contact-options">
                 <a
-                  href="https://t.me/thymuoyhak"
+                  href="https://web.telegram.org/k/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="contact-option"

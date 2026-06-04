@@ -10,8 +10,8 @@ import Footer from './components/Footer';
 import './App.css';
 import Features from './components/Feature';
 import Cart from './components/Cart';
-import Checkout from './components/Checkout'; // Import the new Checkout component
-import OrderHistory from './components/OrderHistory'; // Import the new OrderHistory component
+import Checkout from './components/Checkout';
+import OrderHistory from './components/OrderHistory';
 import Login from './components/Auth/Login';
 import Account from './components/Account';
 import About from './components/About';
@@ -32,8 +32,8 @@ function App() {
                 <Route path="/products/:id" element={<DetailProduct />} />
                 <Route path="/features" element={<Features />} />
                 <Route path="/cart" element={<Cart />} />
-                <Route path="/checkout" element={<Checkout />} /> {/* Add Checkout route */}
-                <Route path="/account/orders" element={<OrderHistory />} /> {/* Add OrderHistory route */}
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/account/orders" element={<OrderHistory />} />
                 <Route path="/contact" element={<Contactpage />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/account" element={<Account />} />
