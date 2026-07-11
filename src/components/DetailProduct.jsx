@@ -14,11 +14,14 @@ const DetailProduct = () => {
   const [activeImage, setActiveImage] = useState(0);
   const [relatedProducts, setRelatedProducts] = useState([]);
 
+  // ប្រើប្រាស់ URL ថ្មី
+  const API_BASE_URL = "https://backend-laravel-shop.onrender.com";
+
   useEffect(() => {
     const fetchProductDetail = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:8000/api/products/${id}`);
+        const response = await fetch(`${API_BASE_URL}/api/products/${id}`);
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -44,7 +47,7 @@ const DetailProduct = () => {
 
     const fetchRelatedProducts = async (categoryId) => {
       try {
-        const response = await fetch(`http://localhost:8000/api/products?category=${categoryId}`);
+        const response = await fetch(`${API_BASE_URL}/api/products?category=${categoryId}`);
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -149,10 +152,10 @@ const DetailProduct = () => {
 
   // Mock additional images (in a real app, these would come from the API)
   const productImages = [
-    product.image.startsWith('http') ? product.image : `http://localhost:8000${product.image}`,
-    product.image.startsWith('http') ? product.image : `http://localhost:8000${product.image}`,
-    product.image.startsWith('http') ? product.image : `http://localhost:8000${product.image}`,
-    product.image.startsWith('http') ? product.image : `http://localhost:8000${product.image}`,
+    product.image.startsWith('http') ? product.image : `${API_BASE_URL}${product.image}`,
+    product.image.startsWith('http') ? product.image : `${API_BASE_URL}${product.image}`,
+    product.image.startsWith('http') ? product.image : `${API_BASE_URL}${product.image}`,
+    product.image.startsWith('http') ? product.image : `${API_BASE_URL}${product.image}`,
   ];
 
   return (
@@ -489,7 +492,7 @@ const DetailProduct = () => {
                       src={
                         relatedProduct.image.startsWith('http')
                           ? relatedProduct.image
-                          : `http://localhost:8000${relatedProduct.image}`
+                          : `${API_BASE_URL}${relatedProduct.image}`
                       }
                       alt={relatedProduct.pro_name}
                       onError={(e) => {

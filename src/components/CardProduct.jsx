@@ -10,11 +10,12 @@ const CardProduct = () => {
   const [activeCategory, setActiveCategory] = useState("all");
   const [categories, setCategories] = useState(["all"]);
   const POLLING_INTERVAL = 30000;
+  const API_URL = "https://backend-laravel-shop.onrender.com";
 
   // Fetch categories from API
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/categories");
+      const response = await fetch(`${API_URL}/api/categories`);
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -41,7 +42,7 @@ const CardProduct = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch("http://localhost:8000/api/products");
+      const response = await fetch(`${API_URL}/api/products`);
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -210,7 +211,7 @@ const CardProduct = () => {
                       src={
                         product.image?.startsWith("http")
                           ? product.image
-                          : `http://localhost:8000${product.image}`
+                          : `${API_URL}${product.image}`
                       }
                       alt={product.pro_name || "Product Image"}
                       onError={(e) => {

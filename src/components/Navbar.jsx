@@ -9,6 +9,7 @@ const Navbar = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { cartCount } = useCart(); // Get cartCount from context
   const location = useLocation();
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Handle scroll event to change navbar style when scrolled
   useEffect(() => {
@@ -41,6 +42,7 @@ const Navbar = () => {
     setIsSearchOpen(!isSearchOpen);
     if (isMobileMenuOpen) setIsMobileMenuOpen(false);
   };
+  
 
   return (
     <header className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
@@ -77,6 +79,33 @@ const Navbar = () => {
               type="text"
               placeholder="Search products..."
               className="search-input"
+              value={searchQuery} // ភ្ជាប់ជាមួយ state
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={async (e) => {
+  if (e.key === 'Enter') {
+    try {
+      // ហៅទៅកាន់ Laravel API របស់អ្នក
+      // កែពី http://localhost:8000/api/... មកប្រើ៖
+const response = await fetch(`https://backend-laravel-shop.onrender.com/api/products/search?q=${searchQuery}`, {
+    method: 'GET',
+    headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        // បើនៅតែ 401 សូមបន្ថែម Header នេះ (ជាដំណោះស្រាយបណ្ដោះអាសន្ន)
+        'X-Requested-With': 'XMLHttpRequest'
+    }
+});
+      const result = await response.json();
+      
+      console.log("លទ្ធផលពី API:", result.data); 
+      
+      // បន្ទាប់ពីទទួលបានលទ្ធផល អ្នកអាចបញ្ជូនទៅកាន់ទំព័រលទ្ធផល
+      // ឬប្រើ state ដើម្បីបង្ហាញលទ្ធផលនៅកន្លែងណាមួយ
+    } catch (error) {
+      console.error("មានបញ្ហាពេលស្វែងរក:", error);
+    }
+  }
+}}
             />
             <button className="search-button" onClick={toggleSearch}>
               <svg
@@ -130,6 +159,8 @@ const Navbar = () => {
           </button>
         </div>
       </div>
+
+   
 
       <div className="nav-neon-border"></div>
     </header>
