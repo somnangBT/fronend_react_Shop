@@ -85,7 +85,7 @@ const Navbar = () => {
   if (e.key === 'Enter') {
     try {
       // ហៅទៅកាន់ Laravel API របស់អ្នក
-      // កែពី http://localhost:8000/api/... មកប្រើ៖
+      // កែពី http://127.0.0.1:8000/api/... មកប្រើ៖
 const response = await fetch(`https://backend-laravel-shop.onrender.com/api/products/search?q=${searchQuery}`, {
     method: 'GET',
     headers: {

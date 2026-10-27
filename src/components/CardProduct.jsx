@@ -10,7 +10,7 @@ const CardProduct = () => {
   const [activeCategory, setActiveCategory] = useState("all");
   const [categories, setCategories] = useState(["all"]);
   const POLLING_INTERVAL = 30000;
-  const API_URL = "https://backend-laravel-shop.onrender.com";
+  const API_URL = "http://127.0.0.1:8000";
 
   // Fetch categories from API
   const fetchCategories = useCallback(async () => {

@@ -22,7 +22,7 @@ const OrderHistory = () => {
     const fetchOrders = async () => {
       setLoading(true);
       try {
-        const response = await fetch('http://localhost:8000/api/orders', {
+        const response = await fetch('http://127.0.0.1:8000/api/orders', {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
@@ -74,7 +74,7 @@ const OrderHistory = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/api/orders/${orderId}/cancel`, {
+      const response = await fetch(`http://127.0.0.1:8000/api/orders/${orderId}/cancel`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',

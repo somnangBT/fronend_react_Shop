@@ -80,7 +80,7 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/api/users', {
+      const response = await fetch('http://127.0.0.1:8000/api/users', {
         method: 'GET',
         headers: {
           'Accept': 'application/json'
@@ -171,7 +171,7 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/api/add-user', {
+      const response = await fetch('http://127.0.0.1:8000/api/add-user', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -6,7 +6,7 @@ const Hero = () => {
   const [heroData, setHeroData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const API_URL = "https://backend-laravel-shop.onrender.com";
+  const API_URL = "http://127.0.0.1:8000";
 
   useEffect(() => {
     const fetchHeroData = async () => {
@@ -19,8 +19,6 @@ const Hero = () => {
         console.log('API Response:', result);
         if (result.status === 'success' && result.data.length > 0) {
           setHeroData(result.data[0]);
-        } else {
-          setError('No data found');
         }
       } catch (err) {
         setError(`Failed to fetch data: ${err.message}`);
@@ -33,8 +31,7 @@ const Hero = () => {
     fetchHeroData();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  // Always render hero banner with fallbacks
 
   // Base URL for images
   const baseUrl = `${API_URL}/storage/`;

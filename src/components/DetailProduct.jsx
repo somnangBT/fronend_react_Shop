@@ -15,7 +15,7 @@ const DetailProduct = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
 
   // ប្រើប្រាស់ URL ថ្មី
-  const API_BASE_URL = "https://backend-laravel-shop.onrender.com";
+  const API_BASE_URL = "http://127.0.0.1:8000";
 
   useEffect(() => {
     const fetchProductDetail = async () => {

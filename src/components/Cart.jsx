@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../CartContext';
 import { useAuth } from '../AuthContext';
@@ -12,16 +12,6 @@ const Cart = () => {
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
   const [promoDiscount, setPromoDiscount] = useState(0);
-  const [showContactSection, setShowContactSection] = useState(false); // New state for contact section
-
-  // Auto-open contact section after login redirect
-  useEffect(() => {
-    if (user && location.state?.openContact) {
-      setShowContactSection(true);
-      // Clear location state to prevent re-opening
-      navigate(location.pathname, { replace: true, state: {} });
-    }
-  }, [user, location, navigate]);
 
   // Calculate cart totals
   const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
@@ -92,15 +82,12 @@ const Cart = () => {
   const handleCheckoutClick = () => {
     if (!user) {
       showNotification('Please log in to proceed to checkout.', 'error');
-      navigate('/login', { state: { from: '/cart', openContact: true } }); // Updated to openContact
+      // បើមិនទាន់ Login ឱ្យលោតទៅ Login សិន រួចចាំលោតទៅ Checkout វិញ
+      navigate('/login', { state: { from: '/checkout' } }); 
     } else {
-      setShowContactSection(true); // Show contact section
+      // បើ Login ហើយ ឱ្យលោតទៅទំព័រ Checkout តែម្តង
+      navigate('/checkout'); 
     }
-  };
-
-  // Close contact section
-  const handleCloseContactSection = () => {
-    setShowContactSection(false);
   };
 
   return (
@@ -136,7 +123,7 @@ const Cart = () => {
                     <div className="item-product">
                       <div className="item-image">
                         <img
-                          src={item.image?.startsWith('http') ? item.image : `http://localhost:8000${item.image}`}
+                          src={item.image?.startsWith('http') ? item.image : `http://127.0.0.1:8000${item.image}`}
                           alt={item.name}
                           onError={(e) => {
                             e.target.onerror = null;
@@ -285,51 +272,6 @@ const Cart = () => {
             <span>Continue Shopping</span>
           </Link>
         </div>
-
-        {showContactSection && user && (
-          <div className="contact-modal" role="dialog" aria-modal="true" aria-labelledby="contact-title">
-            <div className="contact-form-container">
-              <button
-                className="close-contact-btn"
-                onClick={handleCloseContactSection}
-                aria-label="Close contact section"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </button>
-              <h2 className="contact-title" id="contact-title">Contact Us to Complete Your Order</h2>
-              <p className="contact-subtitle">
-                Please reach out to us via Telegram or Email to finalize your purchase.
-              </p>
-              <div className="contact-options">
-                <a
-                  href="https://web.telegram.org/k/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="contact-option"
-                  aria-label="Contact via Telegram"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="contact-icon">
-                    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm4.664 6.549l-1.828 8.627c-.134.632-.486.796-.984.498l-2.785-2.048-1.336 1.287c-.148.143-.274.262-.546.262l.198-2.805 5.098-4.614c.222-.2-.049-.31-.343-.114L8.39 10.54l-2.706-.837c-.582-.18-.595-.632.123-.896l10.582-4.058c.482-.185.902.224.675.9z" />
-                  </svg>
-                  <span>Contact via Telegram</span>
-                </a>
-                <a
-                  href="mailto:support@yourstore.com"
-                  className="contact-option"
-                  aria-label="Contact via Email"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="contact-icon">
-                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                  </svg>
-                  <span>Contact via Email</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </section>
   );
