@@ -9,7 +9,6 @@ const CardProduct = () => {
   const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState("all");
   const [categories, setCategories] = useState(["all"]);
-  const POLLING_INTERVAL = 30000;
   const API_URL = "http://127.0.0.1:8000";
 
   // Fetch categories from API
@@ -70,12 +69,6 @@ const CardProduct = () => {
   useEffect(() => {
     fetchCategories();
     fetchProducts();
-
-    const intervalId = setInterval(() => {
-      fetchCategories();
-      fetchProducts();
-    }, POLLING_INTERVAL);
-    return () => clearInterval(intervalId);
   }, [fetchCategories, fetchProducts]);
 
   const filteredProducts = React.useMemo(() => {
