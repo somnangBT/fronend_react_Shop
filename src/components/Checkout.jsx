@@ -157,7 +157,7 @@ const Checkout = () => {
 
       <div className="checkout-container">
         <div className="checkout-header">
-          <div className="checkout-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center' }}>
+          <div className="checkout-badge">
             <KhmerAngkorCrest size={20} />
             <span>ជំហានចុងក្រោយ</span>
           </div>
@@ -177,79 +177,138 @@ const Checkout = () => {
           </div>
         )}
 
-        <div className="checkout-content">
-          <div className="order-summary">
-            <h2 className="summary-title">សង្ខេបបញ្ជីមុខទំនិញ</h2>
+        <div className="checkout-card">
+          {/* Section 1: Customer Delivery Info */}
+          <div className="checkout-info-card">
+            <div className="info-card-header">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
+                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+              </svg>
+              <span>ព័ត៌មានអ្នកទទួល & ទីតាំងដឹកជញ្ជូន</span>
+            </div>
+            <div className="info-card-grid">
+              <div className="info-item">
+                <span className="info-label">ឈ្មោះអ្នកទទួល:</span>
+                <span className="info-value">{user?.name || user?.email?.split('@')[0] || 'អតិថិជន'}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">លេខទូរស័ព្ទ:</span>
+                <span className="info-value">{user?.phone || '012 345 678'}</span>
+              </div>
+              <div className="info-item full-width">
+                <span className="info-label">អាសយដ្ឋានដឹក:</span>
+                <span className="info-value">{user?.address || 'រាជធានីភ្នំពេញ, កម្ពុជា'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Order Summary */}
+          <div className="order-summary-box">
+            <div className="summary-box-header">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
+                <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.24-1.2A1 1 0 005.06 1H3z" />
+              </svg>
+              <h2>សង្ខេបបញ្ជីមុខទំនិញ</h2>
+            </div>
+
             <div className="summary-items">
               {cartItems.map((item) => (
                 <div className="summary-item" key={item.id}>
                   <div className="item-info">
-                    <span className="item-quantity">{item.quantity}x</span>
+                    <span className="item-qty-badge">{item.quantity}x</span>
                     <span className="item-name">{item.name}</span>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <span className="item-price">${(item.price * item.quantity).toFixed(2)}</span>
-                    <div style={{ fontSize: '0.78rem', color: '#f59e0b' }}>({formatKHR(item.price * item.quantity)})</div>
+                  <div className="item-price-block">
+                    <span className="price-usd">${(item.price * item.quantity).toFixed(2)}</span>
+                    <span className="price-eq"> = </span>
+                    <span className="price-khr">({formatKHR(item.price * item.quantity)})</span>
                   </div>
                 </div>
               ))}
             </div>
+
+            {/* Calculations */}
             <div className="summary-totals">
               <div className="summary-row">
-                <span>តម្លៃសរុបរង</span>
-                <span>${subtotal.toFixed(2)} ({formatKHR(subtotal)})</span>
+                <span className="row-label">តម្លៃសរុបរង</span>
+                <span className="row-value">
+                  <span className="price-usd">${subtotal.toFixed(2)}</span>
+                  <span className="price-eq"> = </span>
+                  <span className="price-khr">({formatKHR(subtotal)})</span>
+                </span>
               </div>
+
               <div className="summary-row">
-                <span>ថ្លៃដឹកជញ្ជូន</span>
-                <span>{shipping === 0 ? <span className="free-shipping" style={{ color: '#2ec4b6' }}>ឥតគិតថ្លៃ (Free)</span> : `$${shipping.toFixed(2)}`}</span>
+                <span className="row-label">ថ្លៃដឹកជញ្ជូន</span>
+                <span className="row-value">
+                  {shipping === 0 ? (
+                    <span className="free-shipping">ឥតគិតថ្លៃ (Free)</span>
+                  ) : (
+                    `$${shipping.toFixed(2)}`
+                  )}
+                </span>
               </div>
+
               {discount > 0 && (
                 <div className="summary-row discount">
-                  <span>បញ្ចុះតម្លៃ</span>
-                  <span style={{ color: '#2ec4b6' }}>-${discount.toFixed(2)}</span>
+                  <span className="row-label">បញ្ចុះតម្លៃ</span>
+                  <span className="row-value" style={{ color: '#2ec4b6' }}>-${discount.toFixed(2)}</span>
                 </div>
               )}
-              <div className="summary-total" style={{ borderTop: '1px solid rgba(255, 107, 53, 0.25)', paddingTop: '1rem', marginTop: '0.8rem' }}>
-                <span>តម្លៃសរុបចុងក្រោយ</span>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ff6b35' }}>${total.toFixed(2)}</div>
-                  <div style={{ fontSize: '1rem', fontWeight: 700, color: '#f59e0b' }}>(~ {formatKHR(total)})</div>
+
+              {/* Grand Total Bar */}
+              <div className="summary-grand-total">
+                <div className="total-label-box">
+                  <span className="total-label">តម្លៃសរុបចុងក្រោយ</span>
+                  <span className="total-hint">(រួមបញ្ចូលទាំងថ្លៃដឹក)</span>
+                </div>
+                <div className="total-price-box">
+                  <span className="grand-usd">${total.toFixed(2)}</span>
+                  <span className="price-eq"> = </span>
+                  <span className="grand-khr">({formatKHR(total)})</span>
                 </div>
               </div>
             </div>
           </div>
 
+          {/* Section 3: Action Buttons */}
           <div className="checkout-actions">
             <button
               className="place-order-btn"
               onClick={handleSubmitOrder}
               disabled={loading}
             >
-              {loading ? 'កំពុងដំណើរការបញ្ជាទិញ...' : 'បញ្ជាក់ការបញ្ជាទិញឥឡូវនេះ'}
-              {!loading && (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20" style={{marginLeft: '8px'}}>
-                  <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-                </svg>
+              {loading ? (
+                <span>កំពុងដំណើរការបញ្ជាទិញ...</span>
+              ) : (
+                <>
+                  <span>បញ្ជាក់ការបញ្ជាទិញឥឡូវនេះ</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.13-.05-.18-.06-.05-.15-.03-.21-.02-.1.02-1.5.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.2.14.28-.01.07.01.23-.01.35z"/>
+                  </svg>
+                </>
               )}
             </button>
+
             <button
               className="back-to-cart-btn"
               onClick={() => navigate('/cart')}
               disabled={loading}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
                 <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
               </svg>
-              ត្រឡប់ទៅកន្ត្រកទំនិញ
+              <span>ត្រឡប់ទៅកន្ត្រកទំនិញ</span>
             </button>
           </div>
 
+          {/* Section 4: Security Note */}
           <div className="checkout-note">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="info-icon" width="20" height="20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zm-1 9a1 1 0 01-1-1v-4a1 1 0 112 0v4a1 1 0 01-1 1z" clipRule="evenodd" />
+            </svg>
             <p>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="info-icon">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zm-1 9a1 1 0 01-1-1v-4a1 1 0 112 0v4a1 1 0 01-1 1z" clipRule="evenodd" />
-              </svg>
-              តាមរយៈការចុចបញ្ជាក់ការបញ្ជាទិញ អ្នកបានយល់ព្រមលើគោលការណ៍សេវាកម្ម និងភាពឯកជនរបស់ DeliciousEats។
+              តាមរយៈការចុចបញ្ជាក់ការបញ្ជាទិញ ព័ត៌មានទំនិញនឹងត្រូវបញ្ជូនទៅកាន់ប្រព័ន្ធ Telegram របស់ហាង DeliciousEats ដោយស្វ័យប្រវត្តិ។
             </p>
           </div>
         </div>
