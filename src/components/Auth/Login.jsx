@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
+import { API_BASE_URL } from '../../config/api';
 import "../styles/Login.css";
 
 const Login = () => {
@@ -88,7 +89,7 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/users', {
+      const response = await fetch(`${API_BASE_URL}/api/users`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json'
@@ -179,7 +180,7 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/add-user', {
+      const response = await fetch(`${API_BASE_URL}/api/add-user`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
