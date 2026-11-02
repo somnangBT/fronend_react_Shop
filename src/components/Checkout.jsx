@@ -58,19 +58,27 @@ const Checkout = () => {
 
     try {
       const orderData = {
-        name: user.name || user.email.split('@')[0],
-        email: user.email,
-        phone: user.phone || '012345678',
-        address: user.address || 'Phnom Penh, Cambodia',
+        name: user?.name || user?.email?.split('@')[0] || 'Customer',
+        customer_name: user?.name || user?.email?.split('@')[0] || 'Customer',
+        email: user?.email || '',
+        phone: user?.phone || '012345678',
+        address: user?.address || 'Phnom Penh, Cambodia',
+        shipping_address: user?.address || 'Phnom Penh, Cambodia',
+        subtotal: parseFloat(subtotal) || parseFloat(total) || 0,
+        total: parseFloat(total) || parseFloat(subtotal) || 0,
+        total_amount: parseFloat(total) || parseFloat(subtotal) || 0,
+        tax: parseFloat(taxes) || 0,
+        shipping: parseFloat(shipping) || 0,
+        discount: parseFloat(discount) || 0,
         items: cartItems.map(item => ({
-          pro_id: item.id,
-          pro_name: item.name,
-          quantity: item.quantity,
-          price: item.price
+          product_id: item.pro_id || item.id,
+          pro_id: item.pro_id || item.id,
+          quantity: parseInt(item.quantity) || 1,
+          price: parseFloat(item.price) || 0,
+          discount: parseFloat(item.discount) || 0
         })),
-        total_amount: total,
         payment_method: 'Telegram/Cash',
-        user_id: user.id || null
+        user_id: user?.id || null
       };
 
       const response = await fetch(`${API_BASE_URL}/api/orders`, {
