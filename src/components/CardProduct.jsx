@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { KhmerDivider, KhmerCorner, KhmerFrieze, KhmerAngkorCrest, KhmerPediment, KhmerPhkaChan, KhmerTevada } from "./KhmerOrnament";
+import { KhmerDivider, KhmerCorner, KhmerFrieze, KhmerPediment, KhmerPhkaChan, KhmerTevada } from "./KhmerOrnament";
 import { formatKHR } from "../utils/currency";
 import { API_BASE_URL as API_URL } from "../config/api";
 import "./styles/CardProduct.css";

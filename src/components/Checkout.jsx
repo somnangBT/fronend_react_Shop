@@ -8,7 +8,7 @@ import { KhmerDivider, KhmerAngkorCrest } from './KhmerOrnament';
 import "./styles/Checkout.css";
 
 const Checkout = () => {
-  const { cartItems, cartCount, clearCart, subtotal, taxes, shipping, discount, total, promoCode } = useCart();
+  const { cartItems, cartCount, clearCart, subtotal, taxes, shipping, discount, total } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();

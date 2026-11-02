@@ -1,7 +1,7 @@
 // About.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { KhmerDivider, KhmerAngkorCrest, KhmerPediment, KhmerPhkaChan, KhmerTevada } from './KhmerOrnament';
+import { KhmerDivider, KhmerPediment, KhmerPhkaChan, KhmerTevada } from './KhmerOrnament';
 import './styles/About.css';
 
 const About = () => {

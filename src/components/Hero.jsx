@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './styles/Hero.css';
 import { useNavigate } from 'react-router-dom';
-import { KhmerDivider, KhmerCorner, KhmerAngkorCrest, KhmerStarLantern, KhmerTevada, KhmerPhkaChan, KhmerFestivalTong } from './KhmerOrnament';
+import { KhmerDivider, KhmerCorner, KhmerStarLantern, KhmerTevada, KhmerPhkaChan, KhmerFestivalTong } from './KhmerOrnament';
 import { API_BASE_URL as API_URL } from '../config/api';
 
 const Hero = () => {

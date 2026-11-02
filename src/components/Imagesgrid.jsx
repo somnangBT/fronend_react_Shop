@@ -1,5 +1,5 @@
 import React from 'react';
-import { KhmerDivider, KhmerAngkorCrest, KhmerFrieze, KhmerPediment, KhmerPhkaChan } from './KhmerOrnament';
+import { KhmerDivider, KhmerFrieze, KhmerPediment, KhmerPhkaChan } from './KhmerOrnament';
 import "./styles/Imagesgrid.css";
 
 const Imagesgrid = () => {

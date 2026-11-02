@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { KhmerDivider, KhmerAngkorCrest, KhmerPediment, KhmerPhkaChan } from './KhmerOrnament';
+import { KhmerDivider, KhmerAngkorCrest, KhmerPediment } from './KhmerOrnament';
 import './styles/Feature.css';
 
 const Features = () => {

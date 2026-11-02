@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { KhmerDivider, KhmerAngkorCrest, KhmerPediment, KhmerPhkaChan } from './KhmerOrnament';
+import { KhmerDivider, KhmerPediment, KhmerPhkaChan } from './KhmerOrnament';
 import "./styles/Contact.css";
 
 const Contact = () => {
