@@ -397,6 +397,346 @@
   color: var(--neon-gold);
 }
 
+/* Section 3: Payment Method Box */
+.payment-method-box {
+  background: rgba(28, 28, 34, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  padding: 1.5rem;
+}
+
+.payment-box-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 0.75rem;
+}
+
+.payment-box-header svg {
+  color: #00f5ff;
+}
+
+.payment-box-header h2 {
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin: 0;
+}
+
+.payment-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.payment-option-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  background: rgba(18, 18, 22, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1rem 1.15rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.payment-option-card:hover {
+  border-color: rgba(0, 245, 255, 0.4);
+  background: rgba(0, 245, 255, 0.04);
+}
+
+.payment-option-card.active {
+  border-color: var(--neon-primary);
+  background: rgba(0, 245, 255, 0.08);
+  box-shadow: 0 0 15px rgba(0, 245, 255, 0.15);
+}
+
+.payment-radio {
+  margin-top: 2px;
+}
+
+.radio-dot {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #52525b;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.radio-dot.checked {
+  border-color: var(--neon-primary);
+}
+
+.radio-dot.checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--neon-primary);
+  box-shadow: 0 0 8px var(--neon-primary);
+}
+
+.payment-info {
+  flex: 1;
+}
+
+.payment-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.payment-title {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--text-bright);
+}
+
+.khqr-badge {
+  background: #E1251B;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.7rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.cash-badge {
+  background: rgba(46, 196, 182, 0.15);
+  color: #2ec4b6;
+  font-weight: 700;
+  font-size: 0.72rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.payment-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* KHQR Card Display */
+.khqr-card-container {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.khqr-card {
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+  color: #0f172a;
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.khqr-card-top {
+  background: #E1251B;
+  color: #ffffff;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.khqr-brand-logo {
+  font-size: 1.2rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.khqr-bakong-tag {
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.khqr-merchant-info {
+  padding: 0.9rem 1rem 0.3rem;
+}
+
+.merchant-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: 0.5px;
+}
+
+.merchant-location {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.khqr-price-badge {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  margin: 0.6rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.khqr-usd {
+  color: #0284c7;
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.khqr-sep {
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.khqr-khr {
+  color: #d97706;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.khqr-qr-frame {
+  padding: 0.5rem 1.25rem;
+}
+
+.khqr-qr-image {
+  width: 200px;
+  height: 200px;
+  display: block;
+  margin: 0 auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 8px;
+  background: #ffffff;
+}
+
+.khqr-scan-guide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: #475569;
+  font-weight: 600;
+  margin-top: 0.6rem;
+}
+
+.khqr-scan-guide svg {
+  color: #E1251B;
+}
+
+.khqr-banks-support {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.65rem 1rem;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.72rem;
+  color: #475569;
+  font-weight: 700;
+}
+
+.khqr-banks-support span {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.khqr-slip-box {
+  padding: 1rem 1.25rem;
+  background: #ffffff;
+}
+
+.slip-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  background: #f1f5f9;
+  border: 1px dashed #94a3b8;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: #334155;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.slip-upload-btn:hover {
+  background: #e2e8f0;
+  border-color: #0284c7;
+  color: #0284c7;
+}
+
+.slip-upload-btn svg {
+  color: #0284c7;
+}
+
+.slip-preview-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+}
+
+.slip-img {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+}
+
+.slip-status {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #16a34a;
+}
+
+.slip-remove {
+  background: transparent;
+  border: none;
+  color: #dc2626;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.slip-remove:hover {
+  text-decoration: underline;
+}
+
 /* Action Buttons */
 .checkout-actions {
   display: flex;
