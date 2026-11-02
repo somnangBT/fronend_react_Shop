@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useCart } from '../CartContext'; // Import the useCart hook
+import { useCart } from '../CartContext';
+import { formatKHR } from '../utils/currency';
+import { KhmerDivider, KhmerAngkorCrest } from './KhmerOrnament';
 import './styles/DetailProduct.css';
 
 const DetailProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addToCart } = useCart(); // Use the cart context
+  const { addToCart } = useCart();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,7 +16,6 @@ const DetailProduct = () => {
   const [activeImage, setActiveImage] = useState(0);
   const [relatedProducts, setRelatedProducts] = useState([]);
 
-  // ប្រើប្រាស់ URL ថ្មី
   const API_BASE_URL = "http://127.0.0.1:8000";
 
   useEffect(() => {
@@ -31,10 +32,9 @@ const DetailProduct = () => {
 
         if (result.status === 'success' && result.data) {
           setProduct(result.data);
-          // Fetch related products based on category
           fetchRelatedProducts(result.data.category.cat_id);
         } else {
-          throw new Error('Invalid data format received');
+          throw new Error('ទិន្នន័យមិនត្រឹមត្រូវ');
         }
 
         setLoading(false);
@@ -56,7 +56,6 @@ const DetailProduct = () => {
         const result = await response.json();
 
         if (result.status === 'success' && result.data) {
-          // Filter out the current product and limit to 4 related products
           const filtered = result.data
             .filter((item) => item.pro_id !== parseInt(id))
             .slice(0, 4);
@@ -71,11 +70,9 @@ const DetailProduct = () => {
       fetchProductDetail();
     }
 
-    // Scroll to top when component mounts
     window.scrollTo(0, 0);
   }, [id]);
 
-  // Calculate discounted price
   const calculateDiscountedPrice = (price, discount) => {
     if (!price || !discount) return price;
     const originalPrice = parseFloat(price);
@@ -93,13 +90,11 @@ const DetailProduct = () => {
 
   const handleAddToCart = () => {
     if (product && product.qty > 0) {
-      addToCart(product, quantity); // Add product and quantity to cart
-      console.log(`Added ${quantity} of product ID ${id} to cart`);
+      addToCart(product, quantity);
 
-      // Show success notification
       const notification = document.createElement('div');
       notification.className = 'cart-notification';
-      notification.textContent = 'Added to cart!';
+      notification.textContent = `បានបន្ថែម "${product.pro_name}" (${quantity}) ទៅកន្ត្រកទំនិញ!`;
       document.body.appendChild(notification);
 
       setTimeout(() => {
@@ -107,16 +102,17 @@ const DetailProduct = () => {
         setTimeout(() => {
           notification.classList.remove('show');
           setTimeout(() => {
-            document.body.removeChild(notification);
+            if (document.body.contains(notification)) {
+              document.body.removeChild(notification);
+            }
           }, 300);
-        }, 2000);
+        }, 2200);
       }, 100);
     }
   };
 
   const handleRelatedProductClick = (productId) => {
     navigate(`/products/${productId}`);
-    // Reset state for new product
     setQuantity(1);
     setActiveImage(0);
   };
@@ -125,7 +121,7 @@ const DetailProduct = () => {
     return (
       <div className="detail-loading">
         <div className="detail-loading-spinner"></div>
-        <p>Loading product details...</p>
+        <p>កំពុងផ្ទុកព័ត៌មានមុខទំនិញ...</p>
       </div>
     );
   }
@@ -133,9 +129,9 @@ const DetailProduct = () => {
   if (error) {
     return (
       <div className="detail-error">
-        <h3>Error Loading Product</h3>
+        <h3>មានបញ្ហាក្នុងការផ្ទុកទិន្នន័យ</h3>
         <p>{error}</p>
-        <button onClick={() => navigate('/products')}>Back to Products</button>
+        <button onClick={() => navigate('/products')}>ត្រឡប់ទៅកាន់មុខទំនិញទាំងអស់</button>
       </div>
     );
   }
@@ -143,23 +139,32 @@ const DetailProduct = () => {
   if (!product) {
     return (
       <div className="detail-error">
-        <h3>Product Not Found</h3>
-        <p>Sorry, the product you're looking for doesn't exist.</p>
-        <button onClick={() => navigate('/products')}>Back to Products</button>
+        <h3>រកមិនឃើញមុខទំនិញនេះទេ</h3>
+        <p>សូមអភ័យទោស មុខទំនិញដែលអ្នកកំពុងស្វែងរកមិនមាននៅក្នុងប្រព័ន្ធឡើយ។</p>
+        <button onClick={() => navigate('/products')}>ត្រឡប់ទៅកាន់មុខទំនិញទាំងអស់</button>
       </div>
     );
   }
 
-  // Mock additional images (in a real app, these would come from the API)
-  const productImages = [
-    product.image.startsWith('http') ? product.image : `${API_BASE_URL}${product.image}`,
-    product.image.startsWith('http') ? product.image : `${API_BASE_URL}${product.image}`,
-    product.image.startsWith('http') ? product.image : `${API_BASE_URL}${product.image}`,
-    product.image.startsWith('http') ? product.image : `${API_BASE_URL}${product.image}`,
-  ];
+  const defaultImg = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500";
+  const mainImgUrl = product.image
+    ? (product.image.startsWith('http')
+      ? product.image
+      : `${API_BASE_URL}${product.image.startsWith('/') ? '' : '/'}${product.image}`)
+    : defaultImg;
+
+  const productImages = [mainImgUrl, mainImgUrl, mainImgUrl];
+
+  const catName = product.category?.cat_name || 'ទូទៅ';
+  const isFresh = catName.includes('ស្រស់') || catName.toLowerCase().includes('fresh');
+  const isCooked = catName.includes('ចំអិន') || catName.toLowerCase().includes('cooked');
+
+  const finalPrice = parseFloat(product.discount) > 0
+    ? calculateDiscountedPrice(product.price, product.discount)
+    : product.price;
 
   return (
-    <section className="detail-section">
+    <section className="detail-section khmer-bg-watermark">
       <div className="detail-grid-overlay"></div>
       <div className="detail-glow-orb detail-glow-1"></div>
       <div className="detail-glow-orb detail-glow-2"></div>
@@ -179,14 +184,14 @@ const DetailProduct = () => {
                 clipRule="evenodd"
               />
             </svg>
-            Back to Products
+            ត្រឡប់ទៅមុខទំនិញទាំងអស់
           </button>
           <div className="breadcrumb-trail">
-            <span>Home</span>
+            <span onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>ទំព័រដើម</span>
             <span className="breadcrumb-separator">/</span>
-            <span>Products</span>
+            <span onClick={() => navigate('/products')} style={{ cursor: 'pointer' }}>មុខទំនិញ</span>
             <span className="breadcrumb-separator">/</span>
-            <span>{product.category.cat_name}</span>
+            <span>{catName}</span>
             <span className="breadcrumb-separator">/</span>
             <span className="breadcrumb-current">{product.pro_name}</span>
           </div>
@@ -204,7 +209,7 @@ const DetailProduct = () => {
                   alt={product.pro_name}
                   onError={(e) => {
                     e.target.onerror = null;
-                    e.target.src = 'https://via.placeholder.com/600x600?text=Image+Not+Available';
+                    e.target.src = defaultImg;
                   }}
                 />
                 <div className="image-glow"></div>
@@ -223,7 +228,7 @@ const DetailProduct = () => {
                     alt={`${product.pro_name} - view ${index + 1}`}
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = 'https://via.placeholder.com/150x150?text=Thumbnail';
+                      e.target.src = defaultImg;
                     }}
                   />
                 </div>
@@ -233,16 +238,19 @@ const DetailProduct = () => {
 
           <div className="detail-info">
             <div className="detail-header">
-              <div className="detail-category">{product.category.cat_name}</div>
+              <div className="detail-category" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                <KhmerAngkorCrest size={16} />
+                <span>{isFresh ? '🌿 អាហារស្រស់ៗ' : isCooked ? '🍳 អាហារចំអិនផ្ទាល់' : catName}</span>
+              </div>
               <h1 className="detail-title">{product.pro_name}</h1>
 
               <div className="detail-meta">
-                <div className="detail-id">Product ID: {product.pro_id}</div>
+                <div className="detail-id">កូដទំនិញ: #{product.pro_id}</div>
                 <div className="detail-stock">
                   {product.qty > 0 ? (
-                    <span className="in-stock">In Stock ({product.qty} available)</span>
+                    <span className="in-stock">✓ មានក្នុងស្តុក ({product.qty} ចំណែក)</span>
                   ) : (
-                    <span className="out-of-stock">Out of Stock</span>
+                    <span className="out-of-stock">អស់ពីស្តុក</span>
                   )}
                 </div>
               </div>
@@ -253,88 +261,59 @@ const DetailProduct = () => {
                     <div className="detail-price-original">${parseFloat(product.price).toFixed(2)}</div>
                     <div className="detail-price discounted">
                       ${calculateDiscountedPrice(product.price, product.discount)}
+                      <span className="price-riel-detail" style={{ color: '#f59e0b', fontSize: '1.05rem', marginLeft: '0.6rem', fontWeight: 600 }}>
+                        (~{formatKHR(finalPrice)})
+                      </span>
                       <span className="price-save">
-                        You save: $
-                        {(parseFloat(product.price) - parseFloat(calculateDiscountedPrice(product.price, product.discount))).toFixed(2)}
+                        ចំណេញ: ${(parseFloat(product.price) - parseFloat(calculateDiscountedPrice(product.price, product.discount))).toFixed(2)}
                       </span>
                     </div>
                   </>
                 ) : (
-                  <div className="detail-price">${parseFloat(product.price).toFixed(2)}</div>
+                  <div className="detail-price">
+                    ${parseFloat(product.price).toFixed(2)}
+                    <span className="price-riel-detail" style={{ color: '#f59e0b', fontSize: '1.05rem', marginLeft: '0.6rem', fontWeight: 600 }}>
+                      (~{formatKHR(finalPrice)})
+                    </span>
+                  </div>
                 )}
               </div>
             </div>
 
             <div className="detail-description">
-              <h3 className="description-title">Description</h3>
+              <h3 className="description-title">ការពិពណ៌នាអំពីមុខទំនិញ</h3>
               <p className="description-text">
                 {product.description ||
-                  'Experience the amazing quality and taste of our premium product. Perfect for any occasion, this product delivers exceptional value and satisfaction every time.'}
+                  'មុខម្ហូបឆ្ងាញ់ប្រចាំហាង DeliciousEats ចម្អិនឡើងពីគ្រឿងផ្សំស្រស់ធម្មជាតិ ១០០% មានអនាម័យខ្ពស់ រសជាតិខ្មែរពិតៗ និងដឹកជញ្ជូនរហ័សទាន់ចិត្តដល់គេហដ្ឋាន។'}
               </p>
             </div>
 
             <div className="detail-features">
-              <h3 className="features-title">Features</h3>
+              <h3 className="features-title">គុណសម្បត្តិពិសេស & ស្តង់ដារ</h3>
               <ul className="features-list">
                 <li className="feature-item">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="feature-icon"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
+                  <svg xmlns="http://www.w3.org/2000/svg" className="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  Premium Quality
+                  គ្រឿងផ្សំស្រស់ធម្មជាតិ ១០០%
                 </li>
                 <li className="feature-item">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="feature-icon"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
+                  <svg xmlns="http://www.w3.org/2000/svg" className="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  Satisfaction Guaranteed
+                  រសជាតិខ្មែរដើម អនាម័យខ្ពស់
                 </li>
                 <li className="feature-item">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="feature-icon"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
+                  <svg xmlns="http://www.w3.org/2000/svg" className="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  Fast Shipping
+                  ដឹកជញ្ជូនរហ័ស (១៥-៣០ នាទី)
                 </li>
                 <li className="feature-item">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="feature-icon"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
+                  <svg xmlns="http://www.w3.org/2000/svg" className="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  Easy Returns
+                  អាចបញ្ជាក់កម្រិតហិរ/ផ្អែមតាមចំណូលចិត្ត
                 </li>
               </ul>
             </div>
@@ -346,17 +325,8 @@ const DetailProduct = () => {
                   onClick={() => handleQuantityChange(-1)}
                   disabled={quantity <= 1}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="btn-icon"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                      clipRule="evenodd"
-                    />
+                  <svg xmlns="http://www.w3.org/2000/svg" className="btn-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
                   </svg>
                 </button>
                 <span className="quantity-display">{quantity}</span>
@@ -365,17 +335,8 @@ const DetailProduct = () => {
                   onClick={() => handleQuantityChange(1)}
                   disabled={!product.qty || quantity >= product.qty}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="btn-icon"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                      clipRule="evenodd"
-                    />
+                  <svg xmlns="http://www.w3.org/2000/svg" className="btn-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
                   </svg>
                 </button>
               </div>
@@ -385,101 +346,19 @@ const DetailProduct = () => {
                 onClick={handleAddToCart}
                 disabled={!product.qty || product.qty <= 0}
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="btn-icon"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"
-                  />
+                <svg xmlns="http://www.w3.org/2000/svg" className="btn-icon" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
                 </svg>
-                Add to Cart
+                បន្ថែមទៅកន្ត្រក
               </button>
-
-              <button className="favorite-button">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="btn-icon"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                Save
-              </button>
-            </div>
-
-            <div className="detail-additional-info">
-              <div className="info-item">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="info-icon"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"
-                  />
-                  <path
-                    d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1v-5h2a2 2 0 011.732 1H14a2 2 0 011.732 1H16a1 1 0 001-1v-1a2 2 0 00-2-2h-3V8a1 1 0 00-1-1H4a1 1 0 00-1-1V5a1 1 0 011-1h7a1 1 0 001-1V2a1 1 0 00-1-1H3a1 1 0 00-1 1v2a1 1 0 001 1z"
-                  />
-                </svg>
-                <div className="info-content">
-                  <span className="info-title">Free Shipping</span>
-                  <span className="info-text">On orders over $50</span>
-                </div>
-              </div>
-
-              <div className="info-item">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="info-icon"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <div className="info-content">
-                  <span className="info-title">Secure Payment</span>
-                  <span className="info-text">100% secure checkout</span>
-                </div>
-              </div>
-
-              <div className="info-item">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="info-icon"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <div className="info-content">
-                  <span className="info-title">24/7 Support</span>
-                  <span className="info-text">Chat with us anytime</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
 
         {relatedProducts.length > 0 && (
           <div className="related-products">
-            <h2 className="related-title">Related Products</h2>
+            <h2 className="related-title">មុខម្ហូប & អាហារស្រស់ៗដែលពាក់ព័ន្ធ</h2>
+            <KhmerDivider />
             <div className="related-grid">
               {relatedProducts.map((relatedProduct) => (
                 <div
@@ -490,14 +369,16 @@ const DetailProduct = () => {
                   <div className="related-image">
                     <img
                       src={
-                        relatedProduct.image.startsWith('http')
-                          ? relatedProduct.image
-                          : `${API_BASE_URL}${relatedProduct.image}`
+                        relatedProduct.image
+                          ? (relatedProduct.image.startsWith('http')
+                            ? relatedProduct.image
+                            : `${API_BASE_URL}${relatedProduct.image.startsWith('/') ? '' : '/'}${relatedProduct.image}`)
+                          : defaultImg
                       }
                       alt={relatedProduct.pro_name}
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = 'https://via.placeholder.com/150x150?text=No+Image';
+                        e.target.src = defaultImg;
                       }}
                     />
                   </div>
@@ -505,13 +386,23 @@ const DetailProduct = () => {
                     <h3 className="related-name">{relatedProduct.pro_name}</h3>
                     <div className="related-price">
                       {parseFloat(relatedProduct.discount) > 0 ? (
-                        <>${calculateDiscountedPrice(relatedProduct.price, relatedProduct.discount)}</>
+                        <>
+                          ${calculateDiscountedPrice(relatedProduct.price, relatedProduct.discount)}
+                          <span style={{ fontSize: '0.8rem', color: '#f59e0b', marginLeft: '0.4rem' }}>
+                            ({formatKHR(calculateDiscountedPrice(relatedProduct.price, relatedProduct.discount))})
+                          </span>
+                        </>
                       ) : (
-                        <>${parseFloat(relatedProduct.price).toFixed(2)}</>
+                        <>
+                          ${parseFloat(relatedProduct.price).toFixed(2)}
+                          <span style={{ fontSize: '0.8rem', color: '#f59e0b', marginLeft: '0.4rem' }}>
+                            ({formatKHR(relatedProduct.price)})
+                          </span>
+                        </>
                       )}
                     </div>
                   </div>
-                  <div className="related-hover">View Product</div>
+                  <div className="related-hover">មើលលម្អិត ➔</div>
                 </div>
               ))}
             </div>

@@ -13,6 +13,35 @@ const Account = () => {
         email: ''
     });
     const [logoutConfirm, setLogoutConfirm] = useState(false);
+    const [orders, setOrders] = useState([]);
+    const [loadingOrders, setLoadingOrders] = useState(false);
+
+    const fetchUserOrders = async (userId, userEmail) => {
+        setLoadingOrders(true);
+        try {
+            const params = new URLSearchParams();
+            if (userId) params.append('user_id', userId);
+            if (userEmail) params.append('email', userEmail);
+            const response = await fetch(`http://127.0.0.1:8000/api/orders?${params.toString()}`);
+            const result = await response.json();
+            if (result.status === 'success') {
+                const arr = Array.isArray(result.data)
+                    ? result.data
+                    : (result.data?.data && Array.isArray(result.data.data) ? result.data.data : []);
+                setOrders(arr);
+            }
+        } catch (err) {
+            console.error('Failed to fetch user orders:', err);
+        } finally {
+            setLoadingOrders(false);
+        }
+    };
+
+    useEffect(() => {
+        if (activeTab === 'orders' && user) {
+            fetchUserOrders(user.id, user.email);
+        }
+    }, [activeTab, user]);
     
     // Fetch user data on component mount
     useEffect(() => {
@@ -332,22 +361,87 @@ const Account = () => {
                         
                         {activeTab === 'orders' && (
                             <div className="orders-tab">
-                                <div className="tab-header">
-                                    <h2>Your Orders</h2>
-                                </div>
-                                
-                                <div className="no-orders">
-                                    <div className="no-orders-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fillRule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
-                                        </svg>
-                                    </div>
-                                    <h3>No Orders Yet</h3>
-                                    <p>You haven't placed any orders yet. Start shopping to see your orders here.</p>
-                                    <button className="shop-now-btn" onClick={() => navigate('/products')}>
-                                        Shop Now
+                                <div className="tab-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <h2>ប្រវត្តិការបញ្ជាទិញ (Your Orders)</h2>
+                                    <button 
+                                        className="shop-now-btn" 
+                                        onClick={() => navigate('/account/orders')}
+                                        style={{ fontSize: '0.85rem', padding: '0.4rem 0.9rem' }}
+                                    >
+                                        មើលទំព័រពេញ (Full Page) →
                                     </button>
                                 </div>
+                                
+                                {loadingOrders ? (
+                                    <div style={{ textAlign: 'center', padding: '3rem 0', color: '#a1a1aa' }}>
+                                        កំពុងទាញយកទិន្នន័យការកុម្ម៉ង់...
+                                    </div>
+                                ) : orders.length === 0 ? (
+                                    <div className="no-orders">
+                                        <div className="no-orders-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fillRule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <h3>មិនទាន់មានការបញ្ជាទិញ</h3>
+                                        <p>អ្នកមិនទាន់បានកុម្ម៉ង់ទិញអ្វីនៅឡើយទេ។ ចាប់ផ្តើមទិញទំនិញដើម្បីមើលប្រវត្តិនៅទីនេះ។</p>
+                                        <button className="shop-now-btn" onClick={() => navigate('/products')}>
+                                            ទិញឥឡូវនេះ (Shop Now)
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="account-orders-list" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.25rem' }}>
+                                        {orders.map((ord) => (
+                                            <div 
+                                                key={ord.id} 
+                                                style={{ 
+                                                    background: 'rgba(255, 255, 255, 0.03)', 
+                                                    border: '1px solid rgba(255, 255, 255, 0.1)', 
+                                                    borderRadius: '12px', 
+                                                    padding: '1.25rem' 
+                                                }}
+                                            >
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                                    <div>
+                                                        <span style={{ fontWeight: '700', color: '#ff9f1c', fontSize: '1.05rem' }}>Order #{ord.id}</span>
+                                                        <span style={{ color: '#94a3b8', fontSize: '0.85rem', marginLeft: '0.75rem' }}>
+                                                            {new Date(ord.created_at).toLocaleDateString()}
+                                                        </span>
+                                                    </div>
+                                                    <span style={{ 
+                                                        padding: '0.3rem 0.8rem', 
+                                                        borderRadius: '20px', 
+                                                        fontSize: '0.8rem', 
+                                                        fontWeight: '600',
+                                                        background: ord.status === 'completed' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 107, 53, 0.2)',
+                                                        color: ord.status === 'completed' ? '#34d399' : '#ff9f1c',
+                                                        border: `1px solid ${ord.status === 'completed' ? '#10b981' : '#ff6b35'}`
+                                                    }}>
+                                                        {ord.status === 'completed' ? '✅ បានបញ្ចប់' : ord.status === 'cancelled' ? '❌ បានបោះបង់' : '⏳ ' + ord.status}
+                                                    </span>
+                                                </div>
+
+                                                <div style={{ color: '#e2e8f0', fontSize: '0.9rem', marginBottom: '0.8rem' }}>
+                                                    {ord.items && ord.items.map((it, i) => (
+                                                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0' }}>
+                                                            <span>• {it.product_name} x {it.quantity}</span>
+                                                            <span style={{ color: '#94a3b8' }}>${(it.price * it.quantity).toFixed(2)}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '0.8rem' }}>
+                                                    <span style={{ color: '#94a3b8', fontSize: '0.88rem' }}>
+                                                        {ord.payment_method?.toUpperCase()} • {ord.items?.length || 0} items
+                                                    </span>
+                                                    <span style={{ fontWeight: '700', fontSize: '1.15rem', color: '#ffffff' }}>
+                                                        សរុប៖ ${parseFloat(ord.total || 0).toFixed(2)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         )}
                         

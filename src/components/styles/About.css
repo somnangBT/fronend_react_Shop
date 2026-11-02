@@ -919,3 +919,33 @@
     height: 2.25rem;
   }
 }
+
+
+/* Enforce vertical stacking in about-header */
+.about-header {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+.about-badge-wrapper {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  margin: 0.6rem 0 1rem 0 !important;
+}
+
+.about-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  margin: 0 auto !important;
+}
+
+.about-title {
+  display: block !important;
+  width: 100% !important;
+  margin: 0.5rem 0 1.25rem 0 !important;
+  text-align: center !important;
+}

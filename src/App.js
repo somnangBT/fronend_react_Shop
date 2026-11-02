@@ -7,6 +7,8 @@ import Homepage from './components/pages/Homepage';
 import Products from './components/pages/Products';
 import DetailProduct from './components/DetailProduct';
 import Footer from './components/Footer';
+import BackToTop from './components/BackToTop';
+import KhmerNewYearPetals from './components/KhmerNewYearPetals';
 import './App.css';
 import Features from './components/Feature';
 import Cart from './components/Cart';
@@ -23,6 +25,7 @@ function App() {
       <CartProvider>
         <Router>
           <div className="app">
+            <KhmerNewYearPetals />
             <Navbar />
             <div className="main-content">
               <Routes>
@@ -36,10 +39,12 @@ function App() {
                 <Route path="/account/orders" element={<OrderHistory />} />
                 <Route path="/contact" element={<Contactpage />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Login />} />
                 <Route path="/account" element={<Account />} />
               </Routes>
             </div>
             <Footer />
+            <BackToTop />
           </div>
         </Router>
       </CartProvider>

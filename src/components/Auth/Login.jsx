@@ -16,13 +16,21 @@ const Login = () => {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(location.pathname === '/register' || location.state?.isSignUp || false);
   const [signupData, setSignupData] = useState({
     name: '',
     email: '',
     password: '',
     password_confirmation: ''
   });
+
+  useEffect(() => {
+    if (location.pathname === '/register') {
+      setIsSignUp(true);
+    } else if (location.pathname === '/login' && !location.state?.isSignUp) {
+      setIsSignUp(false);
+    }
+  }, [location.pathname, location.state]);
 
   // Check if user is already logged in
   useEffect(() => {

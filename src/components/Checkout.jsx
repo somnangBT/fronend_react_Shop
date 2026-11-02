@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../CartContext';
 import { useAuth } from '../AuthContext';
+import { formatKHR } from '../utils/currency';
+import { KhmerDivider, KhmerAngkorCrest } from './KhmerOrnament';
 import "./styles/Checkout.css";
 
 const Checkout = () => {
@@ -40,7 +42,9 @@ const Checkout = () => {
       setTimeout(() => {
         notification.classList.remove('show');
         setTimeout(() => {
-          document.body.removeChild(notification);
+          if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+          }
         }, 400);
       }, 3000);
     }, 100);
@@ -48,75 +52,47 @@ const Checkout = () => {
 
   // Handle order submission
   const handleSubmitOrder = async () => {
-    if (cartCount === 0) {
-      setError('Your cart is empty');
-      return;
-    }
-
-    if (!user) {
-      setError('Please log in to place an order');
-      navigate('/login', { state: { from: location.pathname } });
-      return;
-    }
-
     setLoading(true);
     setError('');
 
-    const payload = {
-      items: cartItems.map(item => ({
-        product_id: item.product_id || item.id || item.pro_id,
-        quantity: item.quantity,
-        price: parseFloat(item.price || 0),
-        discount: parseFloat(item.discount || 0),
-        name: item.name
-      })),
-      subtotal: parseFloat(subtotal.toFixed(2)),
-      tax: parseFloat(taxes.toFixed(2)),
-      shipping: parseFloat(shipping.toFixed(2)),
-      discount: parseFloat(discount.toFixed(2)),
-      total: parseFloat(total.toFixed(2)),
-      promo_code: promoCode || '',
-      notes: '',
-      email: user?.email || '',
-      user_id: user?.id || 1,
-      customer_name: user?.name || 'Customer',
-      payment_method: 'cash',
-      shipping_address: 'Phnom Penh',
-      phone: '012345678'
-    };
-
-    // Log payload for debugging
-    console.log('Order Payload:', payload);
-
     try {
+      const orderData = {
+        name: user.name || user.email.split('@')[0],
+        email: user.email,
+        phone: user.phone || '012345678',
+        address: user.address || 'Phnom Penh, Cambodia',
+        items: cartItems.map(item => ({
+          pro_id: item.id,
+          pro_name: item.name,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        total_amount: total,
+        payment_method: 'Telegram/Cash',
+        user_id: user.id || null
+      };
+
       const response = await fetch('http://127.0.0.1:8000/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          'Accept': 'application/json'
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(orderData)
       });
-
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Server returned non-JSON response");
-      }
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to create order');
+      if (response.ok && data.status === 'success') {
+        setOrderId(data.order_id);
+        setOrderComplete(true);
+        clearCart();
+        showNotification('ការបញ្ជាទិញបានជោគជ័យ! សូមអរគុណ។', 'success');
+      } else {
+        setError(data.message || 'មានបញ្ហាក្នុងការបញ្ជាទិញ។ សូមព្យាយាមម្តងទៀត។');
       }
-
-      setOrderComplete(true);
-      setOrderId(data.order?.id || data.data?.order_id || data.id);
-      clearCart();
-      showNotification('Order placed successfully!', 'success');
     } catch (err) {
-      console.error('Checkout error:', err);
-      setError(err.message || 'Failed to process your order. Please try again.');
-      showNotification('Error processing your order', 'error');
+      setError('មិនអាចភ្ជាប់ទៅកាន់ម៉ាស៊ីនបម្រើបានទេ។ សូមពិនិត្យការតភ្ជាប់អ៊ីនធឺណិត។');
     } finally {
       setLoading(false);
     }
@@ -124,7 +100,7 @@ const Checkout = () => {
 
   if (orderComplete) {
     return (
-      <section className="checkout-section">
+      <section className="checkout-section khmer-bg-watermark">
         <div className="checkout-grid-overlay"></div>
         <div className="checkout-glow-orb checkout-glow-1"></div>
         <div className="checkout-glow-orb checkout-glow-2"></div>
@@ -136,25 +112,26 @@ const Checkout = () => {
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
             </div>
-            <h1 className="success-title">Order Placed Successfully!</h1>
+            <h1 className="success-title">ការបញ្ជាទិញទទួលបានជោគជ័យ!</h1>
+            <KhmerDivider />
             <p className="success-message">
-              Thank you for your order. {orderId && `Your order ID is #${orderId}.`}
+              សូមអរគុណសម្រាប់ការបញ្ជាទិញពី DeliciousEats! {orderId && `លេខកូដបញ្ជាទិញរបស់អ្នកគឺ #${orderId}។`}
             </p>
             <p className="success-info">
-              We've sent the order details to our Telegram system.
+              ព័ត៌មាននៃការបញ្ជាទិញត្រូវបានបញ្ជូនទៅកាន់ប្រព័ន្ធតេឡេក្រាមរបស់ហាងរួចរាល់ហើយ។ ក្រុមការងារយើងនឹងទាក់ទងរៀបចំដឹកជញ្ជូនជូនអ្នកភ្លាមៗ។
             </p>
             <div className="success-actions">
               <button
                 className="view-orders-btn"
                 onClick={() => navigate('/account/orders')}
               >
-                View Your Orders
+                មើលប្រវត្តិបញ្ជាទិញ ➔
               </button>
               <button
                 className="continue-shopping-btn"
                 onClick={() => navigate('/products')}
               >
-                Continue Shopping
+                បន្តទិញទំនិញបន្ថែម
               </button>
             </div>
           </div>
@@ -164,16 +141,21 @@ const Checkout = () => {
   }
 
   return (
-    <section className="checkout-section">
+    <section className="checkout-section khmer-bg-watermark">
       <div className="checkout-grid-overlay"></div>
       <div className="checkout-glow-orb checkout-glow-1"></div>
       <div className="checkout-glow-orb checkout-glow-2"></div>
 
       <div className="checkout-container">
         <div className="checkout-header">
-          <h1 className="checkout-title">Checkout</h1>
+          <div className="checkout-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center' }}>
+            <KhmerAngkorCrest size={20} />
+            <span>ជំហានចុងក្រោយ</span>
+          </div>
+          <h1 className="checkout-title">ទូទាត់ប្រាក់ & បញ្ជាក់ការបញ្ជាទិញ</h1>
+          <KhmerDivider />
           <p className="checkout-subtitle">
-            Complete your order
+            សូមពិនិត្យព័ត៌មានមុខទំនិញ និងទិន្នន័យនៃការដឹកជញ្ជូនរបស់អ្នក
           </p>
         </div>
 
@@ -188,7 +170,7 @@ const Checkout = () => {
 
         <div className="checkout-content">
           <div className="order-summary">
-            <h2 className="summary-title">Order Summary</h2>
+            <h2 className="summary-title">សង្ខេបបញ្ជីមុខទំនិញ</h2>
             <div className="summary-items">
               {cartItems.map((item) => (
                 <div className="summary-item" key={item.id}>
@@ -196,32 +178,34 @@ const Checkout = () => {
                     <span className="item-quantity">{item.quantity}x</span>
                     <span className="item-name">{item.name}</span>
                   </div>
-                  <span className="item-price">${(item.price * item.quantity).toFixed(2)}</span>
+                  <div style={{ textAlign: 'right' }}>
+                    <span className="item-price">${(item.price * item.quantity).toFixed(2)}</span>
+                    <div style={{ fontSize: '0.78rem', color: '#f59e0b' }}>({formatKHR(item.price * item.quantity)})</div>
+                  </div>
                 </div>
               ))}
             </div>
             <div className="summary-totals">
               <div className="summary-row">
-                <span>Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>តម្លៃសរុបរង</span>
+                <span>${subtotal.toFixed(2)} ({formatKHR(subtotal)})</span>
               </div>
               <div className="summary-row">
-                <span>Shipping</span>
-                <span>{shipping === 0 ? <span className="free-shipping">FREE</span> : `$${shipping.toFixed(2)}`}</span>
-              </div>
-              <div className="summary-row">
-                <span>Tax</span>
-                <span>${taxes.toFixed(2)}</span>
+                <span>ថ្លៃដឹកជញ្ជូន</span>
+                <span>{shipping === 0 ? <span className="free-shipping" style={{ color: '#2ec4b6' }}>ឥតគិតថ្លៃ (Free)</span> : `$${shipping.toFixed(2)}`}</span>
               </div>
               {discount > 0 && (
                 <div className="summary-row discount">
-                  <span>Discount</span>
-                  <span>-${discount.toFixed(2)}</span>
+                  <span>បញ្ចុះតម្លៃ</span>
+                  <span style={{ color: '#2ec4b6' }}>-${discount.toFixed(2)}</span>
                 </div>
               )}
-              <div className="summary-total">
-                <span>Total</span>
-                <span>${total.toFixed(2)}</span>
+              <div className="summary-total" style={{ borderTop: '1px solid rgba(255, 107, 53, 0.25)', paddingTop: '1rem', marginTop: '0.8rem' }}>
+                <span>តម្លៃសរុបចុងក្រោយ</span>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ff6b35' }}>${total.toFixed(2)}</div>
+                  <div style={{ fontSize: '1rem', fontWeight: 700, color: '#f59e0b' }}>(~ {formatKHR(total)})</div>
+                </div>
               </div>
             </div>
           </div>
@@ -232,7 +216,7 @@ const Checkout = () => {
               onClick={handleSubmitOrder}
               disabled={loading}
             >
-              {loading ? 'Processing...' : 'Complete Purchase'}
+              {loading ? 'កំពុងដំណើរការបញ្ជាទិញ...' : 'បញ្ជាក់ការបញ្ជាទិញឥឡូវនេះ'}
               {!loading && (
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20" style={{marginLeft: '8px'}}>
                   <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
@@ -247,7 +231,7 @@ const Checkout = () => {
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
               </svg>
-              Back to Cart
+              ត្រឡប់ទៅកន្ត្រកទំនិញ
             </button>
           </div>
 
@@ -256,7 +240,7 @@ const Checkout = () => {
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="info-icon">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zm-1 9a1 1 0 01-1-1v-4a1 1 0 112 0v4a1 1 0 01-1 1z" clipRule="evenodd" />
               </svg>
-              By placing your order, you agree to our Terms of Service and Privacy Policy.
+              តាមរយៈការចុចបញ្ជាក់ការបញ្ជាទិញ អ្នកបានយល់ព្រមលើគោលការណ៍សេវាកម្ម និងភាពឯកជនរបស់ DeliciousEats។
             </p>
           </div>
         </div>

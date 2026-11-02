@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import './styles/Hero.css';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { KhmerDivider, KhmerCorner, KhmerAngkorCrest, KhmerStarLantern, KhmerTevada, KhmerPhkaChan, KhmerFestivalTong } from './KhmerOrnament';
 
 const Hero = () => {
+  const navigate = useNavigate();
   const [heroData, setHeroData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const API_URL = "http://127.0.0.1:8000";
 
   useEffect(() => {
@@ -16,65 +16,96 @@ const Hero = () => {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const result = await response.json();
-        console.log('API Response:', result);
         if (result.status === 'success' && result.data.length > 0) {
           setHeroData(result.data[0]);
         }
       } catch (err) {
-        setError(`Failed to fetch data: ${err.message}`);
         console.error('Fetch Error:', err);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchHeroData();
   }, []);
 
-  // Always render hero banner with fallbacks
+  const handleCategoryJump = (categoryKeyword) => {
+    const productsElem = document.getElementById('products');
+    if (productsElem) {
+      window.dispatchEvent(new CustomEvent('filter-category', { detail: categoryKeyword }));
+      productsElem.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      navigate(`/products?category=${encodeURIComponent(categoryKeyword)}`);
+    }
+  };
 
-  // Base URL for images
   const baseUrl = `${API_URL}/storage/`;
 
   return (
-    <section className="hero-section">
+    <section className="hero-section khmer-bg-watermark">
+      {/* Traditional Khmer New Year Hanging Lanterns & Festive Streamers */}
+      <div className="hero-kny-lantern lantern-left" title="គោមផ្កាយ & ទង់បុណ្យចូលឆ្នាំថ្មី">
+        <KhmerStarLantern size={52} />
+        <KhmerFestivalTong />
+      </div>
+      <div className="hero-kny-lantern lantern-right" title="គោមផ្កាយ & ទង់បុណ្យចូលឆ្នាំថ្មី">
+        <KhmerStarLantern size={52} />
+        <KhmerFestivalTong />
+      </div>
+
       <div className="hero-grid-overlay"></div>
       <div className="hero-glow-orb hero-glow-1"></div>
       <div className="hero-glow-orb hero-glow-2"></div>
 
       <div className="hero-container">
         <div className="hero-content">
-          <div className="hero-badge">Premium Quality • Fast Delivery</div>
+          <div className="hero-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+            <KhmerTevada size={24} />
+            <KhmerPhkaChan size={16} />
+            <span>🏮 អបអរសាទរពិធីបុណ្យចូលឆ្នាំថ្មីប្រពៃណីជាតិខ្មែរ • សួស្តីឆ្នាំថ្មី 🇰🇭</span>
+            <KhmerPhkaChan size={16} />
+          </div>
           <h1 className="hero-title">
-            {heroData?.main_title || 'Futuristic Drinks'}
-            <span className="hero-title-accent">Built for the Future of Business</span>
+            Delicious<span className="hero-title-highlight">Eats</span>
+            <span className="hero-title-accent">ម្ហូបខ្មែរចូលឆ្នាំថ្មី នំប្រពៃណី & អាហារស្រស់ធម្មជាតិ</span>
           </h1>
           <p className="hero-description">
-            {heroData?.description || 'Experience our curated selection of next-gen beverages and energy formulas. Engineered for maximum refreshment and delivered at lightspeed to your location.'}
+            {heroData?.description || 'អបអរសាទរពិធីបុណ្យចូលឆ្នាំថ្មីប្រពៃណីជាតិខ្មែរ! រីករាយជាមួយមុខម្ហូបប្រពៃណីឈ្ងុយឆ្ងាញ់ នំអន្សមជ្រូក-ចេក ការីសាច់មាន់ ខសាច់ជ្រូកពងទា និងគ្រឿងផ្សំស្រស់ធម្មជាតិ ១០០% សម្រាប់សែនទេវតា និងជួបជុំក្រុមគ្រួសារ ដឹកជញ្ជូនរហ័សទាន់ចិត្តដល់គេហដ្ឋាន!'}
           </p>
+
+          <KhmerDivider />
+
+          {/* Quick Category CTAs */}
           <div className="hero-cta-group">
-            <Link to="/products" className="hero-cta-primary">
-              <span className="cta-text">Shop Now</span>
+            <button
+              onClick={() => handleCategoryJump('អាហារស្រស់ៗ')}
+              className="hero-cta-primary hero-btn-fresh"
+            >
+              <span className="cta-icon">🥗</span>
+              <span className="cta-text">អាហារស្រស់ៗ (Fresh Food)</span>
               <span className="cta-pulse"></span>
-            </Link>
-            <Link to="/products" className="hero-cta-secondary">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="hero-icon"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-                />
-              </svg>
-              Browse Menu
-            </Link>
+            </button>
+            <button
+              onClick={() => handleCategoryJump('អាហារចំអិនផ្ទាល់')}
+              className="hero-cta-secondary hero-btn-cooked"
+            >
+              <span className="cta-icon">🍳</span>
+              <span className="cta-text">អាហារចំអិនផ្ទាល់ (Cooked Fresh)</span>
+            </button>
+            <button
+              onClick={() => handleCategoryJump('ចូលឆ្នាំ')}
+              className="hero-cta-kny"
+              style={{
+                background: 'linear-gradient(135deg, #f59e0b 0%, #dc2626 100%)',
+                color: '#fff',
+                border: '1px solid rgba(254, 240, 138, 0.6)',
+                fontWeight: 700,
+                boxShadow: '0 4px 15px rgba(220, 38, 38, 0.4)'
+              }}
+            >
+              <span className="cta-icon">🏮</span>
+              <span className="cta-text">ម្ហូបចូលឆ្នាំថ្មី</span>
+            </button>
           </div>
+
           <div className="hero-features">
             <div className="hero-feature-item">
               <div className="feature-icon-container">
@@ -93,7 +124,7 @@ const Hero = () => {
                   />
                 </svg>
               </div>
-              <span>Hyper Delivery</span>
+              <span>ដឹកជញ្ជូនរហ័សទាន់ចិត្ត</span>
             </div>
             <div className="hero-feature-item">
               <div className="feature-icon-container">
@@ -112,7 +143,7 @@ const Hero = () => {
                   />
                 </svg>
               </div>
-              <span>Premium Formula</span>
+              <span>ស្រស់ធម្មជាតិ ១០០%</span>
             </div>
             <div className="hero-feature-item">
               <div className="feature-icon-container">
@@ -131,93 +162,120 @@ const Hero = () => {
                   />
                 </svg>
               </div>
-              <span>Secure Transaction</span>
+              <span>អនាម័យ & សុវត្ថិភាព</span>
             </div>
           </div>
         </div>
 
         <div className="hero-image-container">
           <div className="hero-product-showcase">
+            {/* Main Showcase Item */}
             <div className="hero-product-item hero-product-main">
-              <div className="hero-product-badge">BEST SELLER</div>
+              <KhmerCorner position="top-left" />
+              <KhmerCorner position="bottom-right" />
+              <div className="hero-product-badge" style={{ background: 'linear-gradient(135deg, #f59e0b, #ef4444)' }}>
+                🏮 ម្ហូបពិសេសចូលឆ្នាំថ្មី
+              </div>
               <div className="hero-product-image-wrapper">
                 <div className="hero-product-glow"></div>
                 <div className="hero-product-image">
                   <img
                     src={
                       heroData?.image1
-                        ? filterUrl(heroData.image1)
-                          ? heroData.image1
-                          : `${baseUrl}${heroData.image1}`
-                        : 'https://www.swirecocacola.com/sbcorpweb/uploads/newsletter/images/source/402660493_1000.jpg'
+                        ? (heroData.image1.startsWith('http') ? heroData.image1 : `${baseUrl}${heroData.image1}`)
+                        : 'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&auto=format&fit=crop&q=80'
                     }
-                    alt="Main product"
-                    onError={(e) => console.log('Image 1 failed to load:', e.target.src)}
+                    alt="Main dish"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&auto=format&fit=crop&q=80';
+                    }}
                   />
                 </div>
               </div>
               <div className="hero-product-info">
-                <h3 className="hero-product-name">{heroData?.main_title || 'Coca-Cola Classic'}</h3>
+                <h3 className="hero-product-name">ឡុកឡាក់សាច់គោ & អាម៉ុកត្រីបែបខ្មែរ</h3>
+                <span className="hero-product-subtag">🍳 ចម្អិនផ្ទាល់ក្តៅៗភ្លាមៗ</span>
               </div>
             </div>
 
-            <div className="hero-product-item hero-product-secondary hero-product-2">
+            {/* Fresh Food Showcase Card */}
+            <div
+              className="hero-product-item hero-product-secondary hero-product-2"
+              onClick={() => handleCategoryJump('អាហារស្រស់ៗ')}
+              style={{ cursor: 'pointer' }}
+              title="ចុចដើម្បីមើល អាហារស្រស់ៗ"
+            >
+              <div className="hero-subcard-badge fresh">🥗 អាហារស្រស់ៗ</div>
               <div className="hero-product-image-wrapper">
                 <div className="hero-product-glow small"></div>
                 <img
                   src={
                     heroData?.image2
-                      ? filterUrl(heroData.image2)
-                        ? heroData.image2
-                        : `${baseUrl}${heroData.image2}`
-                      : 'https://www.thedrinksbusiness.com/content/uploads/2022/06/2519EE4F-7B22-4A4B-B22A-1040C324D784-640x592.jpeg'
+                      ? (heroData.image2.startsWith('http') ? heroData.image2 : `${baseUrl}${heroData.image2}`)
+                      : 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=800&auto=format&fit=crop&q=80'
                   }
-                  alt="Energy drink"
-                  onError={(e) => console.log('Image 2 failed to load:', e.target.src)}
+                  alt="Fresh Salmon"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=800&auto=format&fit=crop&q=80';
+                  }}
                 />
               </div>
+              <div className="hero-subcard-label">ត្រីសាល់ម៉ុន & សាច់ស្រស់សែនទេវតា</div>
             </div>
 
-            <div className="hero-product-item hero-product-secondary hero-product-3">
+            {/* Cooked Food Showcase Card */}
+            <div
+              className="hero-product-item hero-product-secondary hero-product-3"
+              onClick={() => handleCategoryJump('អាហារចំអិនផ្ទាល់')}
+              style={{ cursor: 'pointer' }}
+              title="ចុចដើម្បីមើល អាហារចំអិនផ្ទាល់"
+            >
+              <div className="hero-subcard-badge cooked">🍳 ចម្អិនក្តៅៗ</div>
               <div className="hero-product-image-wrapper">
                 <div className="hero-product-glow small"></div>
                 <img
                   src={
                     heroData?.image3
-                      ? filterUrl(heroData.image3)
-                        ? heroData.image3
-                        : `${baseUrl}${heroData.image3}`
-                      : 'https://fabnews.live/wp-content/uploads/2023/11/Sting-Red_Cambodia-Can-min.png'
+                      ? (heroData.image3.startsWith('http') ? heroData.image3 : `${baseUrl}${heroData.image3}`)
+                      : 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=800&auto=format&fit=crop&q=80'
                   }
-                  alt="Sting energy drink"
-                  onError={(e) => console.log('Image 3 failed to load:', e.target.src)}
+                  alt="Cooked Fresh Seafood Rice"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=800&auto=format&fit=crop&q=80';
+                  }}
                 />
               </div>
+              <div className="hero-subcard-label">នំអន្សមជ្រូក-ចេក & ម្ហូបក្តៅៗ</div>
             </div>
-            
-            {/* ធាតុដែលនៅសល់រក្សាទុកដដែល */}
+
+            {/* Floating Icons */}
             <div className="hero-product-floating-elements">
-              <div className="hero-floating-element hero-float-1">
-                <svg xmlns="http://www.w3.org/2000/svg" className="hero-element-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="hero-floating-element hero-float-2">+</div>
-              <div className="hero-floating-element hero-float-3">
-                <svg xmlns="http://www.w3.org/2000/svg" className="hero-element-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-              </div>
+              <div className="hero-floating-element hero-float-1">🏮</div>
+              <div className="hero-floating-element hero-float-2">🌸</div>
+              <div className="hero-floating-element hero-float-3">✨</div>
             </div>
           </div>
-          
+
           <div className="hero-stats">
-            <div className="hero-stat-item"><span className="hero-stat-number">5,000+</span><span className="hero-stat-label">Daily Orders</span></div>
-            <div className="hero-stat-item"><span className="hero-stat-number">15 min</span><span className="hero-stat-label">Average Delivery</span></div>
-            <div className="hero-stat-item"><span className="hero-stat-number">4.9/5</span><span className="hero-stat-label">Customer Rating</span></div>
+            <div className="hero-stat-item">
+              <span className="hero-stat-number">១០០%</span>
+              <span className="hero-stat-label">ស្រស់ធម្មជាតិ</span>
+            </div>
+            <div className="hero-stat-item">
+              <span className="hero-stat-number">១៥-២៥ នាទី</span>
+              <span className="hero-stat-label">ដឹកជញ្ជូនរហ័ស</span>
+            </div>
+            <div className="hero-stat-item">
+              <span className="hero-stat-number">៤.៩ ★</span>
+              <span className="hero-stat-label">ការពេញចិត្តអតិថិជន</span>
+            </div>
           </div>
         </div>
       </div>
+
       <div className="hero-shape-divider">
         <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
           <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" className="shape-fill"></path>
@@ -225,15 +283,6 @@ const Hero = () => {
       </div>
     </section>
   );
-};
-
-const filterUrl = (url) => {
-  try {
-    new URL(url);
-    return true;
-  } catch {
-    return false;
-  }
 };
 
 export default Hero;

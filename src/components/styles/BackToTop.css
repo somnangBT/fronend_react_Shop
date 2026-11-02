@@ -1,0 +1,96 @@
+/* BackToTop.css - Floating Back to Top Button */
+
+.back-to-top-btn {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff6b35 0%, #f59e0b 100%);
+  border: 1.5px solid rgba(251, 191, 36, 0.6);
+  cursor: pointer;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4), 0 0 15px rgba(245, 158, 11, 0.3);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+  animation: backToTopPopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.back-to-top-btn:hover {
+  transform: translateY(-4px) scale(1.08);
+  box-shadow: 0 10px 30px rgba(255, 107, 53, 0.6), 0 0 25px rgba(251, 191, 36, 0.5);
+  background: linear-gradient(135deg, #f59e0b 0%, #ff6b35 100%);
+}
+
+.back-to-top-btn:active {
+  transform: translateY(-1px) scale(0.98);
+}
+
+.back-to-top-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.back-to-top-arrow {
+  width: 22px;
+  height: 22px;
+  stroke: #ffffff;
+  transition: transform 0.2s ease;
+}
+
+.back-to-top-btn:hover .back-to-top-arrow {
+  transform: translateY(-2px);
+}
+
+.back-to-top-glow {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  animation: pulseGlowRing 2s infinite ease-out;
+  pointer-events: none;
+}
+
+@keyframes backToTopPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pulseGlowRing {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  70% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .back-to-top-btn {
+    bottom: 20px;
+    right: 20px;
+    width: 42px;
+    height: 42px;
+  }
+  .back-to-top-arrow {
+    width: 18px;
+    height: 18px;
+  }
+}

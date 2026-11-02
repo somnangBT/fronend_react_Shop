@@ -681,3 +681,41 @@ body {
     text-align: center;
   }
 }
+
+
+/* Enforce vertical stacking in features-header */
+.features-header {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+.features-title-wrapper {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+}
+
+.features-subtitle-wrapper {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  margin: 0.6rem 0 1rem 0 !important;
+}
+
+.features-subtitle {
+  display: inline-flex !important;
+  align-items: center !important;
+  margin: 0 auto !important;
+}
+
+.features-title {
+  display: block !important;
+  width: 100% !important;
+  margin: 0.5rem 0 1.25rem 0 !important;
+  text-align: center !important;
+}

@@ -656,3 +656,103 @@
     left: 1rem;
   }
 }
+
+
+/* DeliciousEats Enhancements for Order History */
+.order-history-section,
+.order-history-title,
+.order-history-subtitle,
+.order-card,
+.order-status,
+.start-shopping-btn,
+.toggle-details-btn,
+.cancel-order-btn,
+.items-title,
+.breakdown-title,
+.order-item,
+.cost-row {
+  font-family: 'Kantumruy Pro', 'Poppins', sans-serif !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+}
+
+.order-history-badge {
+  display: inline-block;
+  background: rgba(255, 107, 53, 0.15);
+  border: 1px solid rgba(255, 107, 53, 0.35);
+  color: #ff9f1c;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.35rem 1.1rem;
+  border-radius: 50px;
+  margin-bottom: 0.8rem;
+}
+
+.order-tag {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  font-weight: 500;
+  margin-right: 0.3rem;
+}
+
+.order-total-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.order-items-badge {
+  font-size: 0.82rem;
+  color: #a1a1aa;
+}
+
+.item-main-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.item-thumbnail {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.item-text-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.item-text-info .item-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.item-text-info .item-quantity {
+  font-size: 0.82rem;
+  color: #a1a1aa;
+}
+
+.order-shipping-meta {
+  margin-top: 1rem;
+  padding-top: 0.8rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  font-size: 0.88rem;
+  color: #cbd5e1;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.order-shipping-meta .meta-label {
+  color: #94a3b8;
+}
+
+.order-shipping-meta .meta-value {
+  color: #f1f5f9;
+  font-weight: 500;
+}

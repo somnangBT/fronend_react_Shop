@@ -684,3 +684,340 @@ body {
     font-size: 1rem;
   }
 }
+
+
+/* ========================================================
+   DELICIOUS EATS FOOD SPOTLIGHT CARDS & PRODUCT BADGES
+   ======================================================== */
+.products-sub-badge {
+  display: inline-block;
+  background: rgba(255, 107, 53, 0.15);
+  border: 1px solid rgba(255, 107, 53, 0.3);
+  color: #ff9f1c;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.4rem 1.2rem;
+  border-radius: 50px;
+  margin-bottom: 0.8rem;
+}
+
+.food-spotlight-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  margin-bottom: 3.5rem;
+  z-index: 2;
+  position: relative;
+}
+
+.food-spotlight-card {
+  position: relative;
+  background: rgba(26, 26, 46, 0.9);
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+}
+
+.food-spotlight-card.fresh-card {
+  border: 2px solid rgba(16, 185, 129, 0.25);
+}
+
+.food-spotlight-card.fresh-card:hover,
+.food-spotlight-card.fresh-card.spotlight-active {
+  border-color: #10b981;
+  box-shadow: 0 15px 40px rgba(16, 185, 129, 0.25);
+  transform: translateY(-6px);
+}
+
+.food-spotlight-card.cooked-card {
+  border: 2px solid rgba(255, 107, 53, 0.25);
+}
+
+.food-spotlight-card.cooked-card:hover,
+.food-spotlight-card.cooked-card.spotlight-active {
+  border-color: #ff6b35;
+  box-shadow: 0 15px 40px rgba(255, 107, 53, 0.25);
+  transform: translateY(-6px);
+}
+
+.spotlight-badge {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 5;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.4rem 0.9rem;
+  border-radius: 50px;
+  backdrop-filter: blur(8px);
+}
+
+.spotlight-badge.fresh-tag {
+  background: rgba(16, 185, 129, 0.9);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+.spotlight-badge.cooked-tag {
+  background: rgba(255, 107, 53, 0.9);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+}
+
+.spotlight-image-holder {
+  width: 100%;
+  height: 220px;
+  position: relative;
+  overflow: hidden;
+}
+
+.spotlight-image-holder img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.food-spotlight-card:hover .spotlight-image-holder img {
+  transform: scale(1.08);
+}
+
+.spotlight-gradient-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.fresh-grad {
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.15) 0%, rgba(26, 26, 46, 0.95) 100%);
+}
+
+.cooked-grad {
+  background: linear-gradient(180deg, rgba(255, 107, 53, 0.15) 0%, rgba(26, 26, 46, 0.95) 100%);
+}
+
+.spotlight-content {
+  padding: 1.5rem 1.8rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.spotlight-title {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.6rem;
+}
+
+.spotlight-desc {
+  font-size: 0.92rem;
+  color: #b2bec3;
+  line-height: 1.55;
+  margin-bottom: 1.25rem;
+  flex: 1;
+}
+
+.spotlight-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.spotlight-btn-text {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #ff9f1c;
+  transition: transform 0.2s ease;
+}
+
+.fresh-card .spotlight-btn-text {
+  color: #34d399;
+}
+
+.cooked-card .spotlight-btn-text {
+  color: #ff9f1c;
+}
+
+.spotlight-count {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.25rem 0.7rem;
+  border-radius: 20px;
+}
+
+/* Product Card Category Pill */
+.product-type-pill {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  z-index: 5;
+  backdrop-filter: blur(6px);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.type-fresh {
+  background: rgba(16, 185, 129, 0.92);
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35);
+}
+
+.type-cooked {
+  background: rgba(255, 107, 53, 0.92);
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(255, 107, 53, 0.35);
+}
+
+.type-drink {
+  background: rgba(46, 196, 182, 0.92);
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(46, 196, 182, 0.35);
+}
+
+.product-short-desc {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  margin-top: 0.3rem;
+  margin-bottom: 0.6rem;
+  line-height: 1.4;
+}
+
+.card-fresh {
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.card-fresh:hover {
+  border-color: #10b981;
+  box-shadow: 0 20px 60px rgba(16, 185, 129, 0.2);
+}
+
+.card-cooked {
+  border-color: rgba(255, 107, 53, 0.3);
+}
+
+.card-cooked:hover {
+  border-color: #ff6b35;
+  box-shadow: 0 20px 60px rgba(255, 107, 53, 0.2);
+}
+
+.no-products {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #b2bec3;
+}
+
+.no-products-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+  .food-spotlight-container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+
+/* Fix Khmer typography in CardProduct */
+.products-title,
+.products-description,
+.products-sub-badge,
+.category-btn,
+.spotlight-title,
+.spotlight-desc,
+.spotlight-badge,
+.spotlight-btn-text,
+.product-type-pill,
+.product-badge,
+.product-name,
+.product-short-desc,
+.view-details,
+.cart-notification {
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  font-family: 'Kantumruy Pro', 'Poppins', sans-serif !important;
+}
+
+.products-title {
+  line-height: 1.4 !important;
+  font-size: 2.8rem !important;
+}
+
+.category-btn {
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  line-height: 1.5 !important;
+  padding: 0.6rem 1.4rem !important;
+}
+
+
+/* Price in Khmer Riel */
+.product-price-riel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #f59e0b;
+  opacity: 0.95;
+  letter-spacing: 0;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+
+/* 3-Column Spotlight Grid for Festive Khmer New Year */
+.food-spotlight-container {
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)) !important;
+}
+
+.food-spotlight-card.kny-card {
+  border: 1.5px solid rgba(245, 158, 11, 0.4);
+}
+
+.food-spotlight-card.kny-card:hover {
+  border-color: #f59e0b;
+  box-shadow: 0 15px 40px rgba(220, 38, 38, 0.3), 0 0 20px rgba(245, 158, 11, 0.4);
+}
+
+
+/* Enforce vertical stacking (លើក្រោម) in products-header */
+.products-header {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+.products-sub-badge-wrapper {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  margin: 0.6rem 0 1rem 0 !important;
+}
+
+.products-sub-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  margin: 0 auto !important;
+}
+
+.products-title {
+  display: block !important;
+  width: 100% !important;
+  margin: 0.5rem 0 1.25rem 0 !important;
+  text-align: center !important;
+}

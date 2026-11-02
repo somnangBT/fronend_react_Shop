@@ -49,3 +49,15 @@
     transform: rotate(360deg);
   }
 }
+
+
+/* Main content wrapper - accounts for fixed navbar + festive Khmer New Year banner */
+.main-content {
+  padding-top: 110px !important;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding-top: 100px !important;
+  }
+}

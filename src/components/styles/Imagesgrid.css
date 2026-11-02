@@ -532,3 +532,47 @@
     justify-content: center;
   }
 }
+
+
+/* Fix Khmer typography in Imagesgrid */
+.images-badge,
+.images-title,
+.images-subtitle,
+.image-title,
+.image-description,
+.image-badge,
+.images-cta-button {
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  font-family: 'Kantumruy Pro', 'Poppins', sans-serif !important;
+}
+
+
+/* Enforce vertical stacking in images-header */
+.images-header {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+.images-badge-wrapper {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  margin: 0.6rem 0 1rem 0 !important;
+}
+
+.images-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  margin: 0 auto !important;
+}
+
+.images-title {
+  display: block !important;
+  width: 100% !important;
+  margin: 0.5rem 0 1.25rem 0 !important;
+  text-align: center !important;
+}

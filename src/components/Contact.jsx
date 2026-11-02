@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { KhmerDivider, KhmerAngkorCrest, KhmerPediment, KhmerPhkaChan } from './KhmerOrnament';
 import "./styles/Contact.css";
 
 const Contact = () => {
@@ -26,8 +27,8 @@ const Contact = () => {
         
         try {
             // Create mailto link with form data
-            const mailtoLink = `mailto:younsomnang4@gmail.com?subject=${encodeURIComponent(formData.subject || 'Contact Form Submission')}&body=${encodeURIComponent(
-                `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
+            const mailtoLink = `mailto:younsomnang4@gmail.com?subject=${encodeURIComponent(formData.subject || 'សារពីអតិថិជន DeliciousEats')}&body=${encodeURIComponent(
+                `ឈ្មោះ: ${formData.name}\nអ៊ីមែល: ${formData.email}\n\nខ្លឹមសារសារ:\n${formData.message}`
             )}`;
             
             // Open email client
@@ -54,20 +55,28 @@ const Contact = () => {
     };
     
     return (
-        <section className="contact-section">
+        <section className="contact-section khmer-bg-watermark">
             <div className="contact-grid-overlay"></div>
             <div className="contact-glow-orb contact-glow-1"></div>
             <div className="contact-glow-orb contact-glow-2"></div>
             
             <div className="contact-container">
                 <div className="contact-header">
-                    <div className="contact-badge">24/7 Support • Digital Interface</div>
+                    <KhmerPediment width={360} />
+                    <div className="contact-badge-wrapper" style={{ width: '100%', display: 'flex', justifyContent: 'center', margin: '0.8rem 0' }}>
+                        <div className="contact-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                            <KhmerPhkaChan size={15} />
+                            <span>សេវាកម្មរហ័សទាន់ចិត្ត • ២៤/៧</span>
+                            <KhmerPhkaChan size={15} />
+                        </div>
+                    </div>
                     <h2 className="contact-title">
-                        Connect With
-                        <span className="contact-title-accent" data-text="Our Network">Our Network</span>
+                        ទំនាក់ទំនងមកកាន់
+                        <span className="contact-title-accent" data-text="DeliciousEats"> DeliciousEats</span>
                     </h2>
+                    <KhmerDivider />
                     <p className="contact-subtitle">
-                        Reach out through our secure communication channels for orders, support, or partnership inquiries
+                        មានចម្ងល់អំពីការកុម្ម៉ង់មុខម្ហូប សេវាកម្មដឹកជញ្ជូន ឬការសហការផ្សេងៗ សូមផ្ញើសារមកកាន់យើងដោយរីករាយ
                     </p>
                 </div>
                 
@@ -79,7 +88,7 @@ const Contact = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
                             </div>
-                            <h3 className="form-title">Send Transmission</h3>
+                            <h3 className="form-title">ផ្ញើសារមកកាន់យើង</h3>
                         </div>
                         
                         {submitStatus === 'success' && (
@@ -87,7 +96,7 @@ const Contact = () => {
                                 <svg xmlns="http://www.w3.org/2000/svg" className="status-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                                 </svg>
-                                <p>Message transmitted successfully!</p>
+                                <p>សាររបស់អ្នកត្រូវបានផ្ញើដោយជោគជ័យ! យើងនឹងឆ្លើយតបឆាប់ៗនេះ។</p>
                             </div>
                         )}
                         
@@ -96,7 +105,7 @@ const Contact = () => {
                                 <svg xmlns="http://www.w3.org/2000/svg" className="status-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
-                                <p>Transmission failed. Please try again.</p>
+                                <p>មានបញ្ហាក្នុងការផ្ញើសារ។ សូមព្យាយាមម្តងទៀត ឬខលមកកាន់យើងផ្ទាល់។</p>
                             </div>
                         )}
                         
@@ -112,7 +121,7 @@ const Contact = () => {
                                         value={formData.name}
                                         onChange={handleChange} 
                                     />
-                                    <label htmlFor="name" className="form-label">Your Name</label>
+                                    <label htmlFor="name" className="form-label">ឈ្មោះរបស់អ្នក</label>
                                     <div className="input-glow"></div>
                                 </div>
                             </div>
@@ -128,7 +137,7 @@ const Contact = () => {
                                         value={formData.email}
                                         onChange={handleChange} 
                                     />
-                                    <label htmlFor="email" className="form-label">Your Email</label>
+                                    <label htmlFor="email" className="form-label">អ៊ីមែលរបស់អ្នក</label>
                                     <div className="input-glow"></div>
                                 </div>
                             </div>
@@ -142,11 +151,11 @@ const Contact = () => {
                                         value={formData.subject}
                                         onChange={handleChange}
                                     >
-                                        <option value="" disabled>Select Subject</option>
-                                        <option value="Order Inquiry">Place an Order</option>
-                                        <option value="Technical Support">Technical Support</option>
-                                        <option value="Business Partnership">Business Partnership</option>
-                                        <option value="Feedback">Feedback</option>
+                                        <option value="" disabled>សូមជ្រើសរើសប្រធានបទ</option>
+                                        <option value="ការកុម្ម៉ង់មុខម្ហូប">ការកុម្ម៉ង់មុខម្ហូប & អាហារស្រស់</option>
+                                        <option value="សេវាកម្មដឹកជញ្ជូន">សេវាកម្មដឹកជញ្ជូន</option>
+                                        <option value="កិច្ចសហការអាជីវកម្ម">កិច្ចសហការអាជីវកម្ម / ផ្គត់ផ្គង់</option>
+                                        <option value="ការផ្តល់មតិកែលម្អ">ការផ្តល់មតិកែលម្អ ឬសំណូមពរ</option>
                                     </select>
                                     <div className="input-glow"></div>
                                 </div>
@@ -163,7 +172,7 @@ const Contact = () => {
                                         value={formData.message}
                                         onChange={handleChange}
                                     ></textarea>
-                                    <label htmlFor="message" className="form-label">Your Message</label>
+                                    <label htmlFor="message" className="form-label">ខ្លឹមសារសាររបស់អ្នក...</label>
                                     <div className="input-glow"></div>
                                 </div>
                             </div>
@@ -174,7 +183,7 @@ const Contact = () => {
                                 disabled={isSubmitting}
                             >
                                 <span className="btn-text">
-                                    {isSubmitting ? 'Transmitting...' : 'Transmit Message'}
+                                    {isSubmitting ? 'កំពុងផ្ញើសារ...' : 'ផ្ញើសារឥឡូវនេះ ➔'}
                                 </span>
                                 {!isSubmitting && (
                                     <svg xmlns="http://www.w3.org/2000/svg" className="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -195,9 +204,9 @@ const Contact = () => {
                                 </svg>
                             </div>
                             <div className="info-content">
-                                <h4 className="info-title">Location</h4>
-                                <p className="info-text">Eats District, Level 42</p>
-                                <p className="info-text">Phnom Penh, Cambodia</p>
+                                <h4 className="info-title">ទីតាំងហាង</h4>
+                                <p className="info-text">រាជធានីភ្នំពេញ, ប្រទេសកម្ពុជា</p>
+                                <p className="info-text">សេវាដឹកជញ្ជូនរហ័សគ្រប់ខណ្ឌ</p>
                             </div>
                         </div>
                         
@@ -208,9 +217,9 @@ const Contact = () => {
                                 </svg>
                             </div>
                             <div className="info-content">
-                                <h4 className="info-title">Open Hours</h4>
-                                <p className="info-text">Monday - Friday: 24/7</p>
-                                <p className="info-text">Weekend: 10:00 - 02:00</p>
+                                <h4 className="info-title">ម៉ោងបើកបម្រើ</h4>
+                                <p className="info-text">រៀងរាល់ថ្ងៃ: ៧:០០ ព្រឹក - ៩:០០ យប់</p>
+                                <p className="info-text">កុម្ម៉ង់អនឡាញ: ២៤/៧</p>
                             </div>
                         </div>
                         
@@ -221,33 +230,35 @@ const Contact = () => {
                                 </svg>
                             </div>
                             <div className="info-content">
-                                <h4 className="info-title">Contact</h4>
-                                <p className="info-text">Phone: +855 (0) 969 420 333</p>
-                                <p className="info-text">Email: younsomnang4@gmail.com</p>
+                                <h4 className="info-title">ព័ត៌មានទំនាក់ទំនង</h4>
+                                <p className="info-text">ទូរស័ព្ទ: +855 (0) 969 420 333 / 012 345 678</p>
+                                <p className="info-text">អ៊ីមែល: younsomnang4@gmail.com</p>
                             </div>
                         </div>
                         
                         <div className="social-links">
-                            <h4 className="social-title">Connect With Us</h4>
+                            <h4 className="social-title">តាមដានយើងតាមបណ្តាញសង្គម</h4>
                             <div className="social-icons">
-                                <a href="#" className="social-icon-container">
+                                <a href="https://facebook.com" target="_blank" rel="noreferrer" className="social-icon-container" title="Facebook">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="social-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M5 3a2 2 0 00-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 002-2v-3.28a1 1 0 00-.684-.948l-4.493-1.498a1 1 0 00-1.21.502l-1.13 2.257a11.042 11.042 0 01-5.516-5.517l2.257-1.128a1 1 0 00.502-1.21L9.228 3.683A1 1 0 008.279 3H5z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
                                     </svg>
                                 </a>
-                                <a href="#" className="social-icon-container">
+                                <a href="https://telegram.org" target="_blank" rel="noreferrer" className="social-icon-container" title="Telegram">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="social-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                                     </svg>
                                 </a>
-                                <a href="#" className="social-icon-container">
+                                <a href="https://instagram.com" target="_blank" rel="noreferrer" className="social-icon-container" title="Instagram">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="social-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                                     </svg>
                                 </a>
-                                <a href="#" className="social-icon-container">
+                                <a href="https://tiktok.com" target="_blank" rel="noreferrer" className="social-icon-container" title="TikTok">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="social-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
                                     </svg>
                                 </a>
                             </div>
@@ -257,7 +268,7 @@ const Contact = () => {
                 
                 <div className="contact-map">
                     <div className="map-header">
-                        <h3 className="map-title">Our <span className="map-title-accent">Location</span></h3>
+                        <h3 className="map-title">ផែនទី <span className="map-title-accent">ទីតាំងរបស់យើង</span></h3>
                     </div>
                     <div className="map-container">
                         <div className="map-overlay">
@@ -265,6 +276,7 @@ const Contact = () => {
                             <div className="map-pulse"></div>
                         </div>
                         <iframe 
+                            title="DeliciousEats Location"
                             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d250151.94732948628!2d104.7340319545897!3d11.552552384962324!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3109513dc76a6be3%3A0x9c010ee85ab525bb!2sPhnom%20Penh!5e0!3m2!1sen!2skh!4v1684930946039!5m2!1sen!2skh" 
                             width="100%" 
                             height="100%" 
@@ -284,6 +296,6 @@ const Contact = () => {
             </div>
         </section>
     );
-}
+};
 
 export default Contact;

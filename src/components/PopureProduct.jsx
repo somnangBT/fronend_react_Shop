@@ -26,7 +26,7 @@ const PopureProduct = () => {
                         <div className="product-badge bestseller">Best Seller</div>
                         <div className="product-image-container">
                             <div className="product-glow"></div>
-                            <img src="/api/placeholder/400/400" alt="Neon Surge" className="product-image" />
+                            <img src="https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=500" alt="Neon Surge" className="product-image" />
                         </div>
                         <div className="product-info">
                             <div className="product-meta">
@@ -58,7 +58,7 @@ const PopureProduct = () => {
                         <div className="product-badge new">New</div>
                         <div className="product-image-container">
                             <div className="product-glow"></div>
-                            <img src="/api/placeholder/400/400" alt="Quantum Bowl" className="product-image" />
+                            <img src="https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=500" alt="Quantum Bowl" className="product-image" />
                         </div>
                         <div className="product-info">
                             <div className="product-meta">
@@ -89,7 +89,7 @@ const PopureProduct = () => {
                     <div className="popure-product-card">
                         <div className="product-image-container">
                             <div className="product-glow"></div>
-                            <img src="/api/placeholder/400/400" alt="Cyber Sushi" className="product-image" />
+                            <img src="https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=500" alt="Cyber Sushi" className="product-image" />
                         </div>
                         <div className="product-info">
                             <div className="product-meta">
@@ -121,7 +121,7 @@ const PopureProduct = () => {
                         <div className="product-badge discount">-15%</div>
                         <div className="product-image-container">
                             <div className="product-glow"></div>
-                            <img src="/api/placeholder/400/400" alt="Matrix Pizza" className="product-image" />
+                            <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500" alt="Matrix Pizza" className="product-image" />
                         </div>
                         <div className="product-info">
                             <div className="product-meta">
