@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
+import { API_BASE_URL as API_URL } from '../config/api';
 import "./styles/OrderHistory.css";
 
 const OrderHistory = () => {
@@ -10,7 +11,6 @@ const OrderHistory = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [expandedOrderId, setExpandedOrderId] = useState(null);
-  const API_URL = "http://127.0.0.1:8000";
 
   // Get active user from context or storage
   const currentUser = authUser || (() => {

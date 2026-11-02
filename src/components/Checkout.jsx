@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../CartContext';
 import { useAuth } from '../AuthContext';
 import { formatKHR } from '../utils/currency';
+import { API_BASE_URL } from '../config/api';
 import { KhmerDivider, KhmerAngkorCrest } from './KhmerOrnament';
 import "./styles/Checkout.css";
 
@@ -72,7 +73,7 @@ const Checkout = () => {
         user_id: user.id || null
       };
 
-      const response = await fetch('http://127.0.0.1:8000/api/orders', {
+      const response = await fetch(`${API_BASE_URL}/api/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

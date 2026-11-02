@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../CartContext';
 import { useAuth } from '../AuthContext';
 import { formatKHR } from '../utils/currency';
+import { API_BASE_URL } from '../config/api';
 import { KhmerDivider, KhmerAngkorCrest } from './KhmerOrnament';
 import "./styles/Cart.css";
 
@@ -133,7 +134,7 @@ const Cart = () => {
                             item.image
                               ? (item.image.startsWith('http')
                                 ? item.image
-                                : `http://127.0.0.1:8000${item.image.startsWith('/') ? '' : '/'}${item.image}`)
+                                : `${API_BASE_URL}${item.image.startsWith('/') ? '' : '/'}${item.image}`)
                               : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=150"
                           }
                           alt={item.name}

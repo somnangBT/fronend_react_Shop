@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { KhmerDivider, KhmerCorner, KhmerFrieze, KhmerAngkorCrest, KhmerPediment, KhmerPhkaChan, KhmerTevada } from "./KhmerOrnament";
 import { formatKHR } from "../utils/currency";
+import { API_BASE_URL as API_URL } from "../config/api";
 import "./styles/CardProduct.css";
 
 const CardProduct = () => {
@@ -12,7 +13,6 @@ const CardProduct = () => {
   const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState("all");
   const [categories, setCategories] = useState(["all"]);
-  const API_URL = "http://127.0.0.1:8000";
 
   // Fetch categories from API
   const fetchCategories = useCallback(async () => {

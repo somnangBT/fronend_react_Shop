@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import './styles/Hero.css';
 import { useNavigate } from 'react-router-dom';
 import { KhmerDivider, KhmerCorner, KhmerAngkorCrest, KhmerStarLantern, KhmerTevada, KhmerPhkaChan, KhmerFestivalTong } from './KhmerOrnament';
+import { API_BASE_URL as API_URL } from '../config/api';
 
 const Hero = () => {
   const navigate = useNavigate();
   const [heroData, setHeroData] = useState(null);
-  const API_URL = "http://127.0.0.1:8000";
 
   useEffect(() => {
     const fetchHeroData = async () => {

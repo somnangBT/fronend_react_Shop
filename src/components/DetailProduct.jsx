@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCart } from '../CartContext';
 import { formatKHR } from '../utils/currency';
+import { API_BASE_URL } from '../config/api';
 import { KhmerDivider, KhmerAngkorCrest } from './KhmerOrnament';
 import './styles/DetailProduct.css';
 
@@ -15,8 +16,6 @@ const DetailProduct = () => {
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
   const [relatedProducts, setRelatedProducts] = useState([]);
-
-  const API_BASE_URL = "http://127.0.0.1:8000";
 
   useEffect(() => {
     const fetchProductDetail = async () => {

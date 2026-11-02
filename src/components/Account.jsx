@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config/api';
 import "./styles/Account.css";
 
 const Account = () => {
@@ -22,7 +23,7 @@ const Account = () => {
             const params = new URLSearchParams();
             if (userId) params.append('user_id', userId);
             if (userEmail) params.append('email', userEmail);
-            const response = await fetch(`http://127.0.0.1:8000/api/orders?${params.toString()}`);
+            const response = await fetch(`${API_BASE_URL}/api/orders?${params.toString()}`);
             const result = await response.json();
             if (result.status === 'success') {
                 const arr = Array.isArray(result.data)
