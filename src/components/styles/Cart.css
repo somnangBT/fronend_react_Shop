@@ -246,14 +246,37 @@
 
 .cart-items-header {
   display: grid;
-  grid-template-columns: 3fr 1fr 1.5fr 1fr 0.5fr;
-  padding: 1.25rem 1.5rem;
+  grid-template-columns: 2.8fr 1.3fr 1.3fr 1.3fr 48px;
+  align-items: center;
+  padding: 1.1rem 1.5rem;
   background: var(--card-highlight);
   color: var(--text-secondary);
   font-size: 0.9rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.cart-items-header .header-product {
+  text-align: left;
+}
+
+.cart-items-header .header-price {
+  text-align: left;
+  padding-left: 0.5rem;
+}
+
+.cart-items-header .header-quantity {
+  text-align: center;
+}
+
+.cart-items-header .header-total {
+  text-align: left;
+  padding-left: 0.5rem;
+}
+
+.cart-items-header .header-actions {
+  text-align: center;
 }
 
 /* Cart items list */
@@ -264,9 +287,10 @@
 
 .cart-item {
   display: grid;
-  grid-template-columns: 3fr 1fr 1.5fr 1fr 0.5fr;
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--card-highlight);
+  grid-template-columns: 2.8fr 1.3fr 1.3fr 1.3fr 48px;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   transition: var(--transition-normal);
 }
 
@@ -330,21 +354,47 @@
 /* Item price and total */
 .item-price,
 .item-total {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--text-primary);
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding-left: 0.5rem;
 }
 
-.item-total {
-  color: var(--neon-primary);
+.item-price .primary-price {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #00f0ff;
+  white-space: nowrap;
+}
+
+.item-price .khr-price {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #f59e0b;
+  white-space: nowrap;
+}
+
+.item-total .primary-price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ff6b35;
+  white-space: nowrap;
+}
+
+.item-total .khr-price {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #f59e0b;
+  white-space: nowrap;
 }
 
 /* Item quantity */
 .item-quantity {
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .quantity-control {

@@ -151,8 +151,8 @@ const Cart = () => {
                     </div>
 
                     <div className="item-price" data-label="តម្លៃ:">
-                      <div>${item.price.toFixed(2)}</div>
-                      <div style={{ fontSize: '0.78rem', color: '#f59e0b' }}>({formatKHR(item.price)})</div>
+                      <span className="primary-price">${item.price.toFixed(2)}</span>
+                      <span className="khr-price">({formatKHR(item.price)})</span>
                     </div>
 
                     <div className="item-quantity">
@@ -180,8 +180,8 @@ const Cart = () => {
                     </div>
 
                     <div className="item-total" data-label="សរុប:">
-                      <div style={{ fontWeight: 700, color: '#ff6b35' }}>${(item.price * item.quantity).toFixed(2)}</div>
-                      <div style={{ fontSize: '0.8rem', color: '#f59e0b' }}>({formatKHR(item.price * item.quantity)})</div>
+                      <span className="primary-price">${(item.price * item.quantity).toFixed(2)}</span>
+                      <span className="khr-price">({formatKHR(item.price * item.quantity)})</span>
                     </div>
 
                     <div className="item-actions">
