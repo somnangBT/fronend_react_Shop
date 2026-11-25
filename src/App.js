@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { CartProvider } from './CartContext';
 import { AuthProvider } from './AuthContext';
 import Navbar from './components/Navbar';
@@ -19,11 +19,37 @@ import Account from './components/Account';
 import About from './components/About';
 import Contactpage from './components/pages/Contactpage';
 
+const ROUTE_TITLES = {
+  '/': 'DeliciousEats — ហាងលក់ម្ហូបអាហារ & ទំនិញអនឡាញកម្ពុជា',
+  '/products': 'មុខទំនិញទាំងអស់ | DeliciousEats',
+  '/about': 'អំពីយើង | DeliciousEats',
+  '/features': 'លក្ខណៈពិសេស | DeliciousEats',
+  '/cart': 'កន្ត្រកទំនិញ | DeliciousEats',
+  '/checkout': 'ទូទាត់ប្រាក់ KHQR | DeliciousEats',
+  '/account/orders': 'តាមដានការបញ្ជាទិញ | DeliciousEats',
+  '/contact': 'ទំនាក់ទំនង | DeliciousEats',
+  '/login': 'ចូលគណនី | DeliciousEats',
+  '/register': 'ចុះឈ្មោះ | DeliciousEats',
+  '/account': 'គណនីរបស់ខ្ញុំ | DeliciousEats',
+};
+
+function RouteTitleUpdater() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const matchedTitle = pathname.startsWith('/products/')
+      ? 'ព័ត៌មានលម្អិតទំនិញ | DeliciousEats'
+      : ROUTE_TITLES[pathname] || 'DeliciousEats — ហាងលក់ម្ហូបអាហារ & ទំនិញអនឡាញ';
+    document.title = matchedTitle;
+  }, [pathname]);
+  return null;
+}
+
 function App() {
   return (
     <AuthProvider>
       <CartProvider>
         <Router>
+          <RouteTitleUpdater />
           <div className="app">
             <KhmerNewYearPetals />
             <Navbar />
