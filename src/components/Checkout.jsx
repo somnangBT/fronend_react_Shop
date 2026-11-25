@@ -1,11 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../CartContext';
 import { useAuth } from '../AuthContext';
 import { formatKHR } from '../utils/currency';
 import { API_BASE_URL } from '../config/api';
 import { KhmerDivider, KhmerAngkorCrest } from './KhmerOrnament';
-import { generateAbaKhqr, ABA_USD_ACCOUNT, ABA_USD_ACCOUNT_DISPLAY, ABA_DISPLAY_NAME } from '../utils/khqr';
+import {
+  generateBakongApiKhqr,
+  generateAbaKhqr,
+  BAKONG_API_ACCOUNT_ID,
+  BAKONG_API_MERCHANT_NAME,
+  ABA_USD_ACCOUNT,
+  ABA_USD_ACCOUNT_DISPLAY,
+  ABA_DISPLAY_NAME,
+} from '../utils/khqr';
 import "./styles/Checkout.css";
 
 const Checkout = () => {
@@ -17,23 +25,63 @@ const Checkout = () => {
   const [error, setError] = useState('');
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderId, setOrderId] = useState(null);
+  const [finalOrderStatus, setFinalOrderStatus] = useState(null);
 
-  // Payment method: 'khqr' or 'cash'
+  // Payment method: 'khqr' (default) or 'cash'
   const [paymentMethod, setPaymentMethod] = useState('khqr');
+  // KHQR Sub-Provider: 'bakong' (Default Auto-Verify) or 'aba' (Direct ABA 007 842 694)
+  const [khqrProvider, setKhqrProvider] = useState('bakong');
   const [slipFile, setSlipFile] = useState(null);
   const [slipPreview, setSlipPreview] = useState(null);
 
-  // Direct ABA Bank Account KHQR State (YORN SOMNANG - 007 842 694)
+  // Real Bakong API + ABA KHQR State
   const [khqrData, setKhqrData] = useState(null);
+  const [paidVerified, setPaidVerified] = useState(false);
+  const [bakongRef, setBakongRef] = useState(null);
+  const [bakongSender, setBakongSender] = useState(null);
+  const [checkingPayment, setCheckingPayment] = useState(false);
+  const [paidPopup, setPaidPopup] = useState(null);
   const [transferRef, setTransferRef] = useState('');
   const [paidClaimed, setPaidClaimed] = useState(false);
+  const autoSubmittedMd5Ref = useRef(null);
 
-  // Generate YORN SOMNANG's ABA KHQR whenever total changes in 'khqr' mode
+  const playPaidChime = () => {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      [523.25, 659.25, 783.99].forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.12, ctx.currentTime + idx * 0.11);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.11 + 0.25);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + idx * 0.11);
+        osc.stop(ctx.currentTime + idx * 0.11 + 0.26);
+      });
+    } catch (_) {}
+  };
+
+  // Generate KHQR whenever payment mode or total changes (unless already paid/completed)
   useEffect(() => {
-    if (paymentMethod === 'khqr' && total > 0 && !orderComplete) {
+    if (paymentMethod !== 'khqr' || total <= 0 || orderComplete || paidVerified) {
+      return;
+    }
+    if (khqrProvider === 'bakong') {
+      const generated = generateBakongApiKhqr({
+        amount: parseFloat(total.toFixed(2)),
+        currency: 'USD',
+      });
+      setKhqrData(generated);
+      setBakongRef(null);
+      setBakongSender(null);
+    } else {
       setKhqrData(generateAbaKhqr({ currency: 'USD' }));
     }
-  }, [paymentMethod, total, orderComplete]);
+  }, [paymentMethod, khqrProvider, total, orderComplete, paidVerified]);
 
   const handleCopyText = (text, label) => {
     if (navigator?.clipboard?.writeText) {
@@ -42,6 +90,85 @@ const Checkout = () => {
       }).catch(() => {});
     }
   };
+
+  // Check Bakong API payment status in real-time via Laravel Backend -> NBC Bakong API
+  const verifyBakongPayment = async (silent = false) => {
+    if (
+      paymentMethod !== 'khqr' ||
+      khqrProvider !== 'bakong' ||
+      !khqrData?.md5 ||
+      paidVerified ||
+      orderComplete
+    ) {
+      return;
+    }
+    if (!silent) setCheckingPayment(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/bakong/check-payment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ md5: khqrData.md5 }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.paid) {
+          const resolvedRef = data.bakong_ref || khqrData.md5;
+          setPaidVerified(true);
+          setBakongRef(resolvedRef);
+          setBakongSender(data.sender || null);
+          setPaidClaimed(true);
+          setPaidPopup({
+            amount: data.amount ?? parseFloat(total.toFixed(2)),
+            currency: data.currency || 'USD',
+            ref: resolvedRef,
+            sender: data.sender || null,
+          });
+          playPaidChime();
+          showNotification('🎉 បានទូទាត់ប្រាក់តាម Bakong ជោគជ័យ! លុយចូលគណនីរួចរាល់!', 'success');
+
+          // Auto-confirm order once so Admin & Telegram receive payment immediately
+          if (autoSubmittedMd5Ref.current !== khqrData.md5) {
+            autoSubmittedMd5Ref.current = khqrData.md5;
+            setTimeout(() => {
+              handleSubmitOrder({
+                overridePaid: true,
+                overrideRef: resolvedRef,
+                overrideMd5: khqrData.md5,
+                overrideMethod: 'khqr',
+              });
+            }, 1400);
+          }
+        } else if (!silent) {
+          showNotification('⏳ មិនទាន់ឃើញប្រតិបត្តិការទូទាត់នៅឡើយទេ។ សូមរង់ចាំបន្តិច ឬភ្ជាប់វិក្កយបត្រ!', 'error');
+        }
+      }
+    } catch (err) {
+      if (!silent) console.warn('Bakong check failed:', err);
+    } finally {
+      if (!silent) setCheckingPayment(false);
+    }
+  };
+
+  // Auto-poll NBC Bakong Open API every 3 seconds while Bakong KHQR is active
+  useEffect(() => {
+    if (
+      paymentMethod !== 'khqr' ||
+      khqrProvider !== 'bakong' ||
+      !khqrData?.md5 ||
+      paidVerified ||
+      orderComplete
+    ) {
+      return undefined;
+    }
+    const timer = setInterval(() => {
+      verifyBakongPayment(true);
+    }, 3000);
+    return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paymentMethod, khqrProvider, khqrData, paidVerified, orderComplete]);
 
   // Redirect if cart is empty
   useEffect(() => {
@@ -91,10 +218,17 @@ const Checkout = () => {
     }, 100);
   };
 
-  // Handle order submission
-  const handleSubmitOrder = async () => {
+  // Handle order submission (supports auto-submit on Bakong verified payment or manual submit)
+  const handleSubmitOrder = async (arg = {}) => {
+    const opts = arg && typeof arg.preventDefault !== 'function' ? arg : {};
     setLoading(true);
     setError('');
+
+    const isBakongMode = paymentMethod === 'khqr' && khqrProvider === 'bakong';
+    const resolvedMethod = opts.overrideMethod || (paymentMethod === 'khqr' ? (isBakongMode ? 'khqr' : 'aba_khqr') : 'cash');
+    const resolvedMd5 = opts.overrideMd5 ?? (isBakongMode ? (khqrData?.md5 || null) : null);
+    const resolvedRef = opts.overrideRef ?? (isBakongMode ? (bakongRef || transferRef.trim() || null) : (transferRef.trim() || null));
+    const isPaidVerifiedFlag = Boolean(opts.overridePaid || paidVerified);
 
     try {
       // 1. Upload payment slip to ImgBB if attached
@@ -138,11 +272,11 @@ const Checkout = () => {
           price: parseFloat(item.price) || 0,
           discount: parseFloat(item.discount) || 0
         })),
-        payment_method: paymentMethod,
+        payment_method: resolvedMethod,
         payment_proof: paymentProofUrl,
-        khqr_md5: null,
-        bakong_ref: paymentMethod === 'khqr' ? (transferRef.trim() || null) : null,
-        paid_claimed: paymentMethod === 'khqr' ? (paidClaimed || Boolean(paymentProofUrl) || Boolean(transferRef.trim())) : false,
+        khqr_md5: resolvedMd5,
+        bakong_ref: paymentMethod === 'khqr' ? resolvedRef : null,
+        paid_claimed: paymentMethod === 'khqr' ? (isPaidVerifiedFlag || paidClaimed || Boolean(paymentProofUrl) || Boolean(transferRef.trim())) : false,
         user_id: user?.id || null
       };
 
@@ -159,13 +293,20 @@ const Checkout = () => {
 
       if (response.ok && (data.status === 'success' || data.success)) {
         setOrderId(data.order_id || data.order?.id);
+        setFinalOrderStatus(data.payment_status || data.order?.payment_status || (isPaidVerifiedFlag ? 'paid' : 'awaiting_approval'));
+        if (data.bakong_ref || data.order?.bakong_ref) {
+          setBakongRef(data.bakong_ref || data.order?.bakong_ref);
+        }
+        setPaidPopup(null);
         setOrderComplete(true);
         clearCart();
-        showNotification('ការបញ្ជាទិញបានជោគជ័យ! សូមអរគុណ។', 'success');
+        showNotification('🎉 ការបញ្ជាទិញបានជោគជ័យ! សូមអរគុណ។', 'success');
       } else {
+        setPaidPopup(null);
         setError(data.message || 'មានបញ្ហាក្នុងការបញ្ជាទិញ។ សូមព្យាយាមម្តងទៀត។');
       }
     } catch (err) {
+      setPaidPopup(null);
       setError('មិនអាចភ្ជាប់ទៅកាន់ម៉ាស៊ីនបម្រើបានទេ។ សូមពិនិត្យការតភ្ជាប់អ៊ីនធឺណិត។');
     } finally {
       setLoading(false);
@@ -173,6 +314,7 @@ const Checkout = () => {
   };
 
   if (orderComplete) {
+    const isConfirmedPaid = finalOrderStatus === 'paid' || paidVerified;
     return (
       <section className="checkout-section khmer-bg-watermark">
         <div className="checkout-grid-overlay"></div>
@@ -186,11 +328,20 @@ const Checkout = () => {
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
             </div>
-            <h1 className="success-title">ការបញ្ជាទិញទទួលបានជោគជ័យ!</h1>
+            <h1 className="success-title">
+              {isConfirmedPaid ? 'បានទូទាត់ & បញ្ជាទិញជោគជ័យ!' : 'ការបញ្ជាទិញទទួលបានជោគជ័យ!'}
+            </h1>
             <KhmerDivider />
             <p className="success-message">
               សូមអរគុណសម្រាប់ការបញ្ជាទិញពី DeliciousEats! {orderId && `លេខកូដបញ្ជាទិញរបស់អ្នកគឺ #${orderId}។`}
             </p>
+            {isConfirmedPaid && (
+              <div style={{ margin: '12px auto', padding: '12px 16px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.45)', color: '#6ee7b7', fontWeight: 700, fontSize: '0.92rem', maxWidth: '460px' }}>
+                ✅ ធនាគារជាតិ (Bakong) បានបញ្ជាក់ការបង់ប្រាក់រួចរាល់!
+                {bakongRef && <div style={{ fontSize: '0.82rem', marginTop: '4px', color: '#a7f3d0' }}>លេខយោង Ref: {bakongRef}</div>}
+                {bakongSender && <div style={{ fontSize: '0.82rem', marginTop: '2px', color: '#a7f3d0' }}>អ្នកផ្ញើ: {bakongSender}</div>}
+              </div>
+            )}
             <p className="success-info">
               {paymentMethod === 'khqr'
                 ? 'ការបង់ប្រាក់តាម KHQR និងព័ត៌មានបញ្ជាទិញត្រូវបានផ្ញើទៅកាន់ប្រព័ន្ធ Admin និង Telegram Bot រួចរាល់ហើយ! កំពុងរង់ចាំ Admin ពិនិត្យអនុម័ត (Approve) ដើម្បីចេញដឹកជញ្ជូនជូនអ្នក។'
@@ -386,16 +537,64 @@ const Checkout = () => {
 
             {/* KHQR Card Details when KHQR is selected */}
             {paymentMethod === 'khqr' && (
-              <div className="khqr-card-container">
+              <div className="khqr-card-container" style={{ flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                {/* Provider Selector: Bakong API (Default Auto-Check) vs ABA Direct Account */}
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', width: '100%', maxWidth: '380px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setKhqrProvider('bakong')}
+                    style={{
+                      flex: 1,
+                      minWidth: '155px',
+                      padding: '8px 10px',
+                      borderRadius: '10px',
+                      border: khqrProvider === 'bakong' ? '2px solid #00f0ff' : '1px solid rgba(255,255,255,0.18)',
+                      background: khqrProvider === 'bakong' ? 'rgba(0, 240, 255, 0.14)' : 'rgba(15, 23, 42, 0.75)',
+                      color: khqrProvider === 'bakong' ? '#00f0ff' : '#cbd5e1',
+                      fontWeight: 700,
+                      fontSize: '0.8rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ⚡ Bakong KHQR (លំនាំដើម • Auto-Check)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setKhqrProvider('aba')}
+                    style={{
+                      flex: 1,
+                      minWidth: '155px',
+                      padding: '8px 10px',
+                      borderRadius: '10px',
+                      border: khqrProvider === 'aba' ? '2px solid #38bdf8' : '1px solid rgba(255,255,255,0.18)',
+                      background: khqrProvider === 'aba' ? 'rgba(56, 189, 248, 0.16)' : 'rgba(15, 23, 42, 0.75)',
+                      color: khqrProvider === 'aba' ? '#38bdf8' : '#cbd5e1',
+                      fontWeight: 700,
+                      fontSize: '0.8rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    🏦 ABA ({ABA_USD_ACCOUNT_DISPLAY})
+                  </button>
+                </div>
+
                 <div className="khqr-card">
                   <div className="khqr-card-top">
                     <div className="khqr-brand-logo">KHQR</div>
-                    <div className="khqr-bakong-tag">ABA Bank</div>
+                    <div className="khqr-bakong-tag">
+                      {khqrProvider === 'bakong' ? 'Bakong Auto-Pay' : 'ABA Bank'}
+                    </div>
                   </div>
 
                   <div className="khqr-merchant-info">
-                    <div className="merchant-title">{ABA_DISPLAY_NAME}</div>
-                    <div className="merchant-location">គណនី ABA: {ABA_USD_ACCOUNT_DISPLAY} (USD)</div>
+                    <div className="merchant-title">
+                      {khqrProvider === 'bakong' ? BAKONG_API_MERCHANT_NAME : ABA_DISPLAY_NAME}
+                    </div>
+                    <div className="merchant-location">
+                      {khqrProvider === 'bakong'
+                        ? `Bakong ID: ${BAKONG_API_ACCOUNT_ID}`
+                        : `គណនី ABA: ${ABA_USD_ACCOUNT_DISPLAY} (USD)`}
+                    </div>
                   </div>
 
                   <div className="khqr-price-badge">
@@ -408,7 +607,7 @@ const Checkout = () => {
                     {khqrData?.qr && (
                       <img 
                         src={`https://api.qrserver.com/v1/create-qr-code/?size=230x230&data=${encodeURIComponent(khqrData.qr)}`} 
-                        alt="ABA KHQR Code - YORN SOMNANG"
+                        alt={khqrProvider === 'bakong' ? 'Bakong KHQR Code' : 'ABA KHQR Code - YORN SOMNANG'}
                         className="khqr-qr-image"
                       />
                     )}
@@ -416,49 +615,86 @@ const Checkout = () => {
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
                         <path fillRule="evenodd" d="M3 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 2V5h1v1H5zM3 13a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3zm2 2v-1h1v1H5zM13 3a1 1 0 00-1 1v3a1 1 0 001 1h3a1 1 0 001-1V4a1 1 0 00-1-1h-3zm1 2v1h1V5h-1z" clipRule="evenodd" />
                       </svg>
-                      <span>ស្កេន KHQR រួចវាយ ${total.toFixed(2)} ផ្ទេរចូល {ABA_DISPLAY_NAME}</span>
+                      <span>
+                        {khqrProvider === 'bakong'
+                          ? `ស្កេនបាញ់ $${total.toFixed(2)} ដោយស្វ័យប្រវត្តិទៅ ${BAKONG_API_MERCHANT_NAME}`
+                          : `ស្កេន KHQR រួចវាយ $${total.toFixed(2)} ផ្ទេរចូល ${ABA_DISPLAY_NAME}`}
+                      </span>
                     </div>
 
-                    {/* Quick Copy ABA Account & Exact Amount */}
-                    <div style={{ marginTop: '10px', padding: '10px', borderRadius: '8px', background: '#f8fafc', border: '1px solid #cbd5e1', fontSize: '0.78rem' }}>
-                      <div style={{ color: '#0f172a', fontWeight: 700, marginBottom: '6px' }}>
-                        🏦 ABA: {ABA_USD_ACCOUNT_DISPLAY} ({ABA_DISPLAY_NAME})
+                    {khqrProvider === 'bakong' ? (
+                      <div style={{ marginTop: '10px', padding: '10px', borderRadius: '8px', background: paidVerified ? '#dcfce7' : '#f1f5f9', border: `1px solid ${paidVerified ? '#22c55e' : '#cbd5e1'}`, fontSize: '0.78rem' }}>
+                        {paidVerified ? (
+                          <div style={{ color: '#15803d', fontWeight: 800 }}>
+                            ✅ បានទូទាត់ប្រាក់ជោគជ័យ! (Ref: {bakongRef})
+                            {bakongSender && <div style={{ fontSize: '0.74rem', marginTop: '2px' }}>អ្នកផ្ញើ: {bakongSender}</div>}
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', alignItems: 'center' }}>
+                            <span style={{ color: '#0369a1', fontWeight: 700 }}>
+                              🔄 កំពុងរង់ចាំការទូទាត់ (ពិនិត្យស្វ័យប្រវត្តិរៀងរាល់ 3 វិនាទី)...
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => verifyBakongPayment(false)}
+                              disabled={checkingPayment}
+                              style={{
+                                background: '#0284c7',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '6px',
+                                padding: '6px 12px',
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              {checkingPayment ? '⏳ កំពុងឆែក NBC Bakong...' : '🔍 ពិនិត្យការទូទាត់ឥឡូវនេះ'}
+                            </button>
+                          </div>
+                        )}
                       </div>
-                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                        <button
-                          type="button"
-                          onClick={() => handleCopyText(ABA_USD_ACCOUNT, 'លេខកុង ABA')}
-                          style={{
-                            background: '#003d5b',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: '6px',
-                            padding: '5px 10px',
-                            fontSize: '0.75rem',
-                            fontWeight: 700,
-                            cursor: 'pointer'
-                          }}
-                        >
-                          📋 Copy លេខកុង
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleCopyText(total.toFixed(2), 'ទឹកប្រាក់ USD')}
-                          style={{
-                            background: '#0284c7',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: '6px',
-                            padding: '5px 10px',
-                            fontSize: '0.75rem',
-                            fontWeight: 700,
-                            cursor: 'pointer'
-                          }}
-                        >
-                          💵 Copy ${total.toFixed(2)}
-                        </button>
+                    ) : (
+                      <div style={{ marginTop: '10px', padding: '10px', borderRadius: '8px', background: '#f8fafc', border: '1px solid #cbd5e1', fontSize: '0.78rem' }}>
+                        <div style={{ color: '#0f172a', fontWeight: 700, marginBottom: '6px' }}>
+                          🏦 ABA: {ABA_USD_ACCOUNT_DISPLAY} ({ABA_DISPLAY_NAME})
+                        </div>
+                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyText(ABA_USD_ACCOUNT, 'លេខកុង ABA')}
+                            style={{
+                              background: '#003d5b',
+                              color: '#fff',
+                              border: 'none',
+                              borderRadius: '6px',
+                              padding: '5px 10px',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            📋 Copy លេខកុង
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyText(total.toFixed(2), 'ទឹកប្រាក់ USD')}
+                            style={{
+                              background: '#0284c7',
+                              color: '#fff',
+                              border: 'none',
+                              borderRadius: '6px',
+                              padding: '5px 10px',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            💵 Copy ${total.toFixed(2)}
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
 
                   <div className="khqr-banks-support">
@@ -475,7 +711,7 @@ const Checkout = () => {
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
                         <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
                       </svg>
-                      <span>{slipFile ? 'ប្ដូររូបវិក្កយបត្រ ABA' : 'ភ្ជាប់រូបវិក្កយបត្របង់ប្រាក់ (Slip)'}</span>
+                      <span>{slipFile ? 'ប្ដូររូបវិក្កយបត្រ' : 'ភ្ជាប់រូបវិក្កយបត្របង់ប្រាក់ (Slip)'}</span>
                       <input 
                         type="file" 
                         accept="image/*" 
@@ -488,7 +724,11 @@ const Checkout = () => {
                       type="text"
                       value={transferRef}
                       onChange={(e) => setTransferRef(e.target.value)}
-                      placeholder="ឈ្មោះគណនីអ្នកផ្ញើ ឬ លេខយោង ABA (ស្រេចចិត្ត)"
+                      placeholder={
+                        khqrProvider === 'bakong'
+                          ? 'លេខយោង / ឈ្មោះគណនីអ្នកផ្ញើ (ស្រេចចិត្ត)'
+                          : 'ឈ្មោះគណនីអ្នកផ្ញើ ឬ លេខយោង ABA (ស្រេចចិត្ត)'
+                      }
                       style={{
                         width: '100%',
                         marginTop: '8px',
@@ -505,10 +745,10 @@ const Checkout = () => {
                     <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px', fontSize: '0.8rem', color: '#334155', fontWeight: 600, cursor: 'pointer', justifyContent: 'center' }}>
                       <input
                         type="checkbox"
-                        checked={paidClaimed || Boolean(slipFile) || Boolean(transferRef.trim())}
+                        checked={paidVerified || paidClaimed || Boolean(slipFile) || Boolean(transferRef.trim())}
                         onChange={(e) => setPaidClaimed(e.target.checked)}
                       />
-                      <span>ខ្ញុំបានស្កេនបង់លុយចូល ABA {ABA_DISPLAY_NAME} រួចរាល់ (រង់ចាំ Admin Approve)</span>
+                      <span>ខ្ញុំបានស្កេនបង់លុយរួចរាល់ (រង់ចាំ Admin Approve ដឹកជញ្ជូន)</span>
                     </label>
 
                     {slipPreview && (
@@ -518,6 +758,53 @@ const Checkout = () => {
                         <button type="button" onClick={handleRemoveSlip} className="slip-remove">លុបចេញ</button>
                       </div>
                     )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Instant Real-Time Payment Received Popup Modal */}
+            {paidPopup && (
+              <div
+                style={{
+                  position: 'fixed',
+                  inset: 0,
+                  zIndex: 9999,
+                  background: 'rgba(2, 6, 23, 0.82)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '16px',
+                  backdropFilter: 'blur(4px)',
+                }}
+              >
+                <div
+                  style={{
+                    background: '#0f172a',
+                    border: '2px solid #22c55e',
+                    borderRadius: '18px',
+                    padding: '28px 24px',
+                    maxWidth: '380px',
+                    width: '100%',
+                    textAlign: 'center',
+                    boxShadow: '0 20px 60px rgba(34, 197, 94, 0.35)',
+                    color: '#f8fafc',
+                  }}
+                >
+                  <div style={{ fontSize: '3rem', lineHeight: 1, marginBottom: '12px' }}>✅</div>
+                  <h2 style={{ margin: '0 0 8px', color: '#4ade80', fontSize: '1.35rem', fontWeight: 800 }}>
+                    បានទូទាត់ប្រាក់ជោគជ័យ!
+                  </h2>
+                  <p style={{ margin: '0 0 12px', color: '#cbd5e1', fontSize: '0.95rem' }}>
+                    ធនាគារជាតិ (Bakong) បានបញ្ជាក់ការបាញ់ប្រាក់ចំនួន{' '}
+                    <strong style={{ color: '#fff' }}>${Number(paidPopup.amount).toFixed(2)}</strong> រួចរាល់!
+                  </p>
+                  <div style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.35)', borderRadius: '10px', padding: '10px', fontSize: '0.82rem', color: '#a7f3d0', marginBottom: '14px' }}>
+                    <div><strong>Ref:</strong> {paidPopup.ref}</div>
+                    {paidPopup.sender && <div><strong>អ្នកផ្ញើ:</strong> {paidPopup.sender}</div>}
+                  </div>
+                  <div style={{ fontSize: '0.84rem', color: '#38bdf8', fontWeight: 700 }}>
+                    ⏳ កំពុងបញ្ជាក់ការបញ្ជាទិញ & ផ្ញើទៅ Telegram Bot...
                   </div>
                 </div>
               </div>

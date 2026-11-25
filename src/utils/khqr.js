@@ -1,5 +1,10 @@
-// Official EMVCo / NBC Bakong KHQR Utility matched to YORN SOMNANG's Real ABA Bank Account
+// Official EMVCo / NBC Bakong & ABA KHQR Utility for SOMNANG YORN
 
+// 1. Bakong Open API Account (Supports Dynamic Pricing & Automatic Paid Verification via NBC API)
+export const BAKONG_API_ACCOUNT_ID = 'somnang_yorn@bkrt';
+export const BAKONG_API_MERCHANT_NAME = 'SOMNANG YORN';
+
+// 2. Direct ABA Bank Account (Static Dual-Currency P2P KHQR matched to YORN SOMNANG's ABA QR)
 export const ABA_BAKONG_ID = 'abaakhppxxx@abaa';
 export const ABA_USD_ACCOUNT = '007842694';
 export const ABA_USD_ACCOUNT_DISPLAY = '007 842 694';
@@ -9,9 +14,9 @@ export const ABA_MERCHANT_NAME = 'SOMNANG YORN';
 export const ABA_DISPLAY_NAME = 'YORN SOMNANG';
 export const ABA_MERCHANT_CITY = 'Phnom Penh';
 
-// Backward-compatible aliases
-export const BAKONG_ACCOUNT_ID = ABA_BAKONG_ID;
-export const BAKONG_MERCHANT_NAME = ABA_DISPLAY_NAME;
+// Default exports aligned to Bakong API account
+export const BAKONG_ACCOUNT_ID = BAKONG_API_ACCOUNT_ID;
+export const BAKONG_MERCHANT_NAME = BAKONG_API_MERCHANT_NAME;
 
 function tlv(tag, value) {
   const str = String(value);
@@ -34,7 +39,7 @@ export function crc16(data) {
   return crc.toString(16).toUpperCase().padStart(4, '0');
 }
 
-// Pure JS MD5 (UTF-8 safe, RFC 1321)
+// Pure JS MD5 (UTF-8 safe, RFC 1321) for NBC Bakong check_transaction_by_md5
 export function md5(input) {
   const bytes = new TextEncoder().encode(input);
   const len = bytes.length;
@@ -103,19 +108,66 @@ export function md5(input) {
 }
 
 /**
- * Generate YORN SOMNANG's Official ABA Dual-Currency KHQR payload.
- * Uses Static P2P (010211) with ABA Tag 29 + Tag 40 so ALL Cambodian banks
- * (ABA, ACLEDA, Wing, Bakong, Canadia...) scan & pay directly into ABA 007 842 694
- * without triggering cross-bank [Q0625] merchant invoice errors.
+ * Generate NBC Bakong Open API compliant Dynamic Individual KHQR payload + MD5 hash.
+ * Uses somnang_yorn@bkrt so NBC /v1/check_transaction_by_md5 verifies payment automatically.
  */
-export function generateAbaKhqr({
+export function generateBakongApiKhqr({
+  amount,
   currency = 'USD',
-  includeAmount = false,
-  amount = 0,
+  bakongAccountId = BAKONG_API_ACCOUNT_ID,
+  merchantName = BAKONG_API_MERCHANT_NAME,
+  merchantCity = ABA_MERCHANT_CITY,
+  expiresInMinutes = 15,
 } = {}) {
-  const isKhr = String(currency).toUpperCase() === 'KHR';
   const numericAmount = Number(amount);
-  const isDynamic = Boolean(includeAmount) && Number.isFinite(numericAmount) && numericAmount > 0;
+  const isDynamic = Number.isFinite(numericAmount) && numericAmount > 0;
+  const isKhr = String(currency).toUpperCase() === 'KHR';
+
+  const nowMs = Date.now();
+  const expiresAt = nowMs + expiresInMinutes * 60 * 1000;
+
+  let payload = '';
+  payload += tlv('00', '01');
+  payload += tlv('01', isDynamic ? '12' : '11');
+  payload += tlv('29', tlv('00', bakongAccountId));
+  payload += tlv('52', '5999');
+  payload += tlv('53', isKhr ? '116' : '840');
+
+  if (isDynamic) {
+    const amountStr = isKhr
+      ? String(Math.round(numericAmount))
+      : numericAmount.toFixed(2);
+    payload += tlv('54', amountStr);
+  }
+
+  payload += tlv('58', 'KH');
+  payload += tlv('59', merchantName.slice(0, 25));
+  payload += tlv('60', merchantCity.slice(0, 15));
+
+  if (isDynamic) {
+    payload += tlv('99', tlv('00', String(nowMs)) + tlv('01', String(expiresAt)));
+  }
+
+  payload += '6304';
+  const qr = payload + crc16(payload);
+
+  return {
+    provider: 'bakong',
+    qr,
+    md5: md5(qr),
+    expiresAt,
+    accountId: bakongAccountId,
+    accountName: merchantName,
+  };
+}
+
+/**
+ * Generate YORN SOMNANG's Official ABA Dual-Currency Static KHQR payload.
+ * Uses Static P2P (010211) with ABA Tag 29 + Tag 40 so ALL Cambodian banks
+ * scan & pay directly into ABA 007 842 694 without [Q0625] merchant invoice errors.
+ */
+export function generateAbaKhqr({ currency = 'USD' } = {}) {
+  const isKhr = String(currency).toUpperCase() === 'KHR';
   const primaryAccount = isKhr ? ABA_KHR_ACCOUNT : ABA_USD_ACCOUNT;
 
   const tag29 =
@@ -132,19 +184,11 @@ export function generateAbaKhqr({
 
   let payload = '';
   payload += tlv('00', '01');
-  payload += tlv('01', isDynamic ? '12' : '11');
+  payload += tlv('01', '11');
   payload += tlv('29', tag29);
   payload += tlv('40', tag40);
   payload += tlv('52', '5999');
   payload += tlv('53', isKhr ? '116' : '840');
-
-  if (isDynamic) {
-    const amountStr = isKhr
-      ? String(Math.round(numericAmount))
-      : numericAmount.toFixed(2);
-    payload += tlv('54', amountStr);
-  }
-
   payload += tlv('58', 'KH');
   payload += tlv('59', ABA_MERCHANT_NAME);
   payload += tlv('60', ABA_MERCHANT_CITY);
@@ -153,6 +197,7 @@ export function generateAbaKhqr({
   const qr = payload + crc16(payload);
 
   return {
+    provider: 'aba',
     qr,
     md5: md5(qr),
     accountNumber: primaryAccount,
@@ -161,6 +206,4 @@ export function generateAbaKhqr({
   };
 }
 
-export function generateBakongKhqr(options = {}) {
-  return generateAbaKhqr({ ...options, includeAmount: false });
-}
+export const generateBakongKhqr = generateBakongApiKhqr;

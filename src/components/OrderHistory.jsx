@@ -251,7 +251,9 @@ const OrderHistory = () => {
                       <div className="order-items-badge">
                         📦 {itemsCount} មុខទំនិញ •{' '}
                         {order.payment_method === 'khqr' || order.payment_method === 'bakong_aba'
-                          ? 'ABA KHQR'
+                          ? 'Bakong KHQR'
+                          : order.payment_method === 'aba_khqr'
+                          ? 'ABA KHQR (007 842 694)'
                           : order.payment_method?.toUpperCase() || 'COD'}{' '}
                         •{' '}
                         {order.payment_status === 'paid'
@@ -346,7 +348,7 @@ const OrderHistory = () => {
 
                         {order.bakong_ref && (
                           <div className="order-shipping-meta">
-                            <span className="meta-label">🔖 លេខយោង / អ្នកផ្ញើ ABA៖</span>
+                            <span className="meta-label">🔖 លេខយោង / Ref៖</span>
                             <span className="meta-value">{order.bakong_ref}</span>
                           </div>
                         )}
