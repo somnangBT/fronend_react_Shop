@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { API_BASE_URL as API_URL } from '../config/api';
+import OrderProgressTracker from './OrderProgressTracker';
 import "./styles/OrderHistory.css";
 
 const OrderHistory = () => {
@@ -22,9 +23,11 @@ const OrderHistory = () => {
     }
   })();
 
-  const fetchOrders = useCallback(async () => {
-    setLoading(true);
-    setError('');
+  const fetchOrders = useCallback(async (silent = false) => {
+    if (!silent) {
+      setLoading(true);
+      setError('');
+    }
 
     const userId = currentUser?.id || '';
     const userEmail = currentUser?.email || '';
@@ -61,15 +64,27 @@ const OrderHistory = () => {
       }
     } catch (err) {
       console.error('Error fetching orders:', err);
-      setError('មិនអាចទាញយកប្រវត្តិបញ្ជាទិញបានទេ។ សូមព្យាយាមម្តងទៀត។ (Failed to load orders)');
+      if (!silent) {
+        setError('មិនអាចទាញយកប្រវត្តិបញ្ជាទិញបានទេ។ សូមព្យាយាមម្តងទៀត។ (Failed to load orders)');
+      }
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }, [currentUser]);
 
   useEffect(() => {
-    fetchOrders();
+    fetchOrders(false);
   }, [fetchOrders]);
+
+  // Silent live polling when any order is still awaiting Admin approval or delivery
+  useEffect(() => {
+    const hasActiveOrder = orders.some((o) => ['pending', 'preparing', 'delivering'].includes((o.status || '').toLowerCase()));
+    if (!hasActiveOrder) return undefined;
+    const timer = setInterval(() => fetchOrders(true), 8000);
+    return () => clearInterval(timer);
+  }, [orders, fetchOrders]);
 
   const toggleOrderDetails = (orderId) => {
     setExpandedOrderId(prev => (prev === orderId ? null : orderId));
@@ -274,6 +289,13 @@ const OrderHistory = () => {
                       </svg>
                     </button>
                   </div>
+
+                  {/* 3-Stage Visual Tracker: Admin Approve -> Delivery -> Done */}
+                  <OrderProgressTracker
+                    status={order.status}
+                    paymentStatus={order.payment_status}
+                    compact
+                  />
 
                   {expandedOrderId === order.id && (
                     <div className="order-details">

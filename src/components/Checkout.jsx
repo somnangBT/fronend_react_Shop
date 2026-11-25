@@ -5,6 +5,7 @@ import { useAuth } from '../AuthContext';
 import { formatKHR } from '../utils/currency';
 import { API_BASE_URL } from '../config/api';
 import { KhmerDivider, KhmerAngkorCrest } from './KhmerOrnament';
+import OrderProgressTracker from './OrderProgressTracker';
 import {
   generateBakongApiKhqr,
   generateAbaKhqr,
@@ -26,6 +27,7 @@ const Checkout = () => {
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderId, setOrderId] = useState(null);
   const [finalOrderStatus, setFinalOrderStatus] = useState(null);
+  const [liveDeliveryStatus, setLiveDeliveryStatus] = useState('pending');
 
   // Payment method: 'khqr' (default) or 'cash'
   const [paymentMethod, setPaymentMethod] = useState('khqr');
@@ -292,7 +294,9 @@ const Checkout = () => {
       const data = await response.json();
 
       if (response.ok && (data.status === 'success' || data.success)) {
-        setOrderId(data.order_id || data.order?.id);
+        const createdOrderId = data.order_id || data.order?.id;
+        setOrderId(createdOrderId);
+        setLiveDeliveryStatus(data.order?.status || 'pending');
         setFinalOrderStatus(data.payment_status || data.order?.payment_status || (isPaidVerifiedFlag ? 'paid' : 'awaiting_approval'));
         if (data.bakong_ref || data.order?.bakong_ref) {
           setBakongRef(data.bakong_ref || data.order?.bakong_ref);
@@ -312,6 +316,51 @@ const Checkout = () => {
       setLoading(false);
     }
   };
+
+  // Poll live order status (Admin Approve -> Delivery -> Done) after order is completed
+  useEffect(() => {
+    if (!orderComplete || !orderId || ['completed', 'cancelled'].includes(liveDeliveryStatus)) {
+      return undefined;
+    }
+
+    const fetchLiveOrderStatus = async () => {
+      try {
+        const params = new URLSearchParams();
+        if (user?.id) params.append('user_id', user.id);
+        if (user?.email) params.append('email', user.email);
+        const queryStr = params.toString() ? `?${params.toString()}` : '';
+        const headers = { Accept: 'application/json' };
+        if (user?.token && user.token !== 'token_placeholder') {
+          headers.Authorization = `Bearer ${user.token}`;
+        }
+
+        const res = await fetch(`${API_BASE_URL}/api/orders${queryStr}`, { headers });
+        if (!res.ok) return;
+        const json = await res.json();
+        const list = Array.isArray(json.data) ? json.data : [];
+        const matched = list.find((o) => Number(o.id) === Number(orderId));
+        if (!matched) return;
+
+        if (matched.payment_status && matched.payment_status !== finalOrderStatus) {
+          setFinalOrderStatus(matched.payment_status);
+        }
+        if (matched.status && matched.status !== liveDeliveryStatus) {
+          setLiveDeliveryStatus(matched.status);
+          if (matched.status === 'delivering') {
+            playPaidChime();
+            showNotification('🛵 Admin បានអនុម័តហើយ! កំពុងដឹកជញ្ជូនជូនអ្នក!', 'success');
+          } else if (matched.status === 'completed') {
+            playPaidChime();
+            showNotification('🎉 ការដឹកជញ្ជូនបានបញ្ចប់ជោគជ័យ! សូមអរគុណ!', 'success');
+          }
+        }
+      } catch (_) {}
+    };
+
+    const timer = setInterval(fetchLiveOrderStatus, 5000);
+    return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderComplete, orderId, liveDeliveryStatus, finalOrderStatus, user]);
 
   if (orderComplete) {
     const isConfirmedPaid = finalOrderStatus === 'paid' || paidVerified;
@@ -342,10 +391,21 @@ const Checkout = () => {
                 {bakongSender && <div style={{ fontSize: '0.82rem', marginTop: '2px', color: '#a7f3d0' }}>អ្នកផ្ញើ: {bakongSender}</div>}
               </div>
             )}
+
+            {/* 3-Stage Visual Tracker: Admin Approve -> Delivery -> Done */}
+            <OrderProgressTracker
+              status={liveDeliveryStatus}
+              paymentStatus={finalOrderStatus || (paidVerified ? 'paid' : 'awaiting_approval')}
+            />
+
             <p className="success-info">
-              {paymentMethod === 'khqr'
-                ? 'ការបង់ប្រាក់តាម KHQR និងព័ត៌មានបញ្ជាទិញត្រូវបានផ្ញើទៅកាន់ប្រព័ន្ធ Admin និង Telegram Bot រួចរាល់ហើយ! កំពុងរង់ចាំ Admin ពិនិត្យអនុម័ត (Approve) ដើម្បីចេញដឹកជញ្ជូនជូនអ្នក។'
-                : 'ព័ត៌មាននៃការបញ្ជាទិញត្រូវបានបញ្ជូនទៅកាន់ប្រព័ន្ធ Telegram របស់ហាងរួចរាល់ហើយ។ ក្រុមការងារយើងនឹងទាក់ទងរៀបចំដឹកជញ្ជូនជូនអ្នកភ្លាមៗ។'}
+              {liveDeliveryStatus === 'completed'
+                ? '🎉 ការដឹកជញ្ជូនបានបញ្ចប់ដោយជោគជ័យ! អរគុណសម្រាប់ការគាំទ្រ DeliciousEats។'
+                : liveDeliveryStatus === 'delivering'
+                ? '🛵 Admin បានអនុម័តរួចរាល់ ហើយកំពុងដឹកជញ្ជូនអាហារដល់ទីតាំងរបស់អ្នក!'
+                : paymentMethod === 'khqr'
+                ? 'ការបង់ប្រាក់តាម KHQR និងព័ត៌មានបញ្ជាទិញត្រូវបានផ្ញើទៅកាន់ប្រព័ន្ធ Admin និង Telegram Bot រួចរាល់ហើយ! កំពុងរង់ចាំ Admin អនុម័ត (Approve) ដើម្បីចេញដឹកជញ្ជូន។'
+                : 'ព័ត៌មាននៃការបញ្ជាទិញត្រូវបានបញ្ជូនទៅកាន់ប្រព័ន្ធ Telegram របស់ហាងរួចរាល់ហើយ។ កំពុងរង់ចាំ Admin អនុម័ត និងដឹកជញ្ជូនជូនអ្នក។'}
             </p>
             <div className="success-actions">
               <button
