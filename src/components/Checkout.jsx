@@ -5,6 +5,7 @@ import { useAuth } from '../AuthContext';
 import { formatKHR } from '../utils/currency';
 import { API_BASE_URL } from '../config/api';
 import { KhmerDivider, KhmerAngkorCrest } from './KhmerOrnament';
+import { generateAbaKhqr, ABA_USD_ACCOUNT, ABA_USD_ACCOUNT_DISPLAY, ABA_DISPLAY_NAME } from '../utils/khqr';
 import "./styles/Checkout.css";
 
 const Checkout = () => {
@@ -21,6 +22,26 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState('khqr');
   const [slipFile, setSlipFile] = useState(null);
   const [slipPreview, setSlipPreview] = useState(null);
+
+  // Direct ABA Bank Account KHQR State (YORN SOMNANG - 007 842 694)
+  const [khqrData, setKhqrData] = useState(null);
+  const [transferRef, setTransferRef] = useState('');
+  const [paidClaimed, setPaidClaimed] = useState(false);
+
+  // Generate YORN SOMNANG's ABA KHQR whenever total changes in 'khqr' mode
+  useEffect(() => {
+    if (paymentMethod === 'khqr' && total > 0 && !orderComplete) {
+      setKhqrData(generateAbaKhqr({ currency: 'USD' }));
+    }
+  }, [paymentMethod, total, orderComplete]);
+
+  const handleCopyText = (text, label) => {
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        showNotification(`📋 បានចម្លង ${label}: ${text}`, 'success');
+      }).catch(() => {});
+    }
+  };
 
   // Redirect if cart is empty
   useEffect(() => {
@@ -119,6 +140,9 @@ const Checkout = () => {
         })),
         payment_method: paymentMethod,
         payment_proof: paymentProofUrl,
+        khqr_md5: null,
+        bakong_ref: paymentMethod === 'khqr' ? (transferRef.trim() || null) : null,
+        paid_claimed: paymentMethod === 'khqr' ? (paidClaimed || Boolean(paymentProofUrl) || Boolean(transferRef.trim())) : false,
         user_id: user?.id || null
       };
 
@@ -168,7 +192,9 @@ const Checkout = () => {
               សូមអរគុណសម្រាប់ការបញ្ជាទិញពី DeliciousEats! {orderId && `លេខកូដបញ្ជាទិញរបស់អ្នកគឺ #${orderId}។`}
             </p>
             <p className="success-info">
-              ព័ត៌មាននៃការបញ្ជាទិញត្រូវបានបញ្ជូនទៅកាន់ប្រព័ន្ធ Telegram របស់ហាងរួចរាល់ហើយ។ ក្រុមការងារយើងនឹងទាក់ទងរៀបចំដឹកជញ្ជូនជូនអ្នកភ្លាមៗ។
+              {paymentMethod === 'khqr'
+                ? 'ការបង់ប្រាក់តាម KHQR និងព័ត៌មានបញ្ជាទិញត្រូវបានផ្ញើទៅកាន់ប្រព័ន្ធ Admin និង Telegram Bot រួចរាល់ហើយ! កំពុងរង់ចាំ Admin ពិនិត្យអនុម័ត (Approve) ដើម្បីចេញដឹកជញ្ជូនជូនអ្នក។'
+                : 'ព័ត៌មាននៃការបញ្ជាទិញត្រូវបានបញ្ជូនទៅកាន់ប្រព័ន្ធ Telegram របស់ហាងរួចរាល់ហើយ។ ក្រុមការងារយើងនឹងទាក់ទងរៀបចំដឹកជញ្ជូនជូនអ្នកភ្លាមៗ។'}
             </p>
             <div className="success-actions">
               <button
@@ -364,12 +390,12 @@ const Checkout = () => {
                 <div className="khqr-card">
                   <div className="khqr-card-top">
                     <div className="khqr-brand-logo">KHQR</div>
-                    <div className="khqr-bakong-tag">Bakong</div>
+                    <div className="khqr-bakong-tag">ABA Bank</div>
                   </div>
 
                   <div className="khqr-merchant-info">
-                    <div className="merchant-title">DELICIOUS EATS SHOP</div>
-                    <div className="merchant-location">Phnom Penh, Cambodia</div>
+                    <div className="merchant-title">{ABA_DISPLAY_NAME}</div>
+                    <div className="merchant-location">គណនី ABA: {ABA_USD_ACCOUNT_DISPLAY} (USD)</div>
                   </div>
 
                   <div className="khqr-price-badge">
@@ -379,40 +405,110 @@ const Checkout = () => {
                   </div>
 
                   <div className="khqr-qr-frame">
-                    <img 
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://bakong.nbc.org.kh/pay?amount=${total.toFixed(2)}&currency=USD&merchant=DeliciousEatsShop`} 
-                      alt="Bakong KHQR Code"
-                      className="khqr-qr-image"
-                    />
+                    {khqrData?.qr && (
+                      <img 
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=230x230&data=${encodeURIComponent(khqrData.qr)}`} 
+                        alt="ABA KHQR Code - YORN SOMNANG"
+                        className="khqr-qr-image"
+                      />
+                    )}
                     <div className="khqr-scan-guide">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
                         <path fillRule="evenodd" d="M3 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 2V5h1v1H5zM3 13a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3zm2 2v-1h1v1H5zM13 3a1 1 0 00-1 1v3a1 1 0 001 1h3a1 1 0 001-1V4a1 1 0 00-1-1h-3zm1 2v1h1V5h-1z" clipRule="evenodd" />
                       </svg>
-                      <span>ស្កេនជាមួយ Mobile Banking ណាក៏បាន</span>
+                      <span>ស្កេន KHQR រួចវាយ ${total.toFixed(2)} ផ្ទេរចូល {ABA_DISPLAY_NAME}</span>
+                    </div>
+
+                    {/* Quick Copy ABA Account & Exact Amount */}
+                    <div style={{ marginTop: '10px', padding: '10px', borderRadius: '8px', background: '#f8fafc', border: '1px solid #cbd5e1', fontSize: '0.78rem' }}>
+                      <div style={{ color: '#0f172a', fontWeight: 700, marginBottom: '6px' }}>
+                        🏦 ABA: {ABA_USD_ACCOUNT_DISPLAY} ({ABA_DISPLAY_NAME})
+                      </div>
+                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyText(ABA_USD_ACCOUNT, 'លេខកុង ABA')}
+                          style={{
+                            background: '#003d5b',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '5px 10px',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          📋 Copy លេខកុង
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyText(total.toFixed(2), 'ទឹកប្រាក់ USD')}
+                          style={{
+                            background: '#0284c7',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '5px 10px',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          💵 Copy ${total.toFixed(2)}
+                        </button>
+                      </div>
                     </div>
                   </div>
 
                   <div className="khqr-banks-support">
                     <span>ABA</span>
-                    <span>Bakong</span>
-                    <span>Wing</span>
                     <span>ACLEDA</span>
+                    <span>Wing</span>
+                    <span>Bakong</span>
                     <span>Canadia</span>
                   </div>
 
-                  {/* Slip Upload Box */}
+                  {/* Slip Upload Box + Sender Ref + Manual Paid Confirmation */}
                   <div className="khqr-slip-box">
                     <label className="slip-upload-btn">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
                         <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
                       </svg>
-                      <span>{slipFile ? 'ប្ដូររូបវិក្កយបត្រ' : 'ភ្ជាប់រូបវិក្កយបត្រ (បើបានបង់រួច)'}</span>
+                      <span>{slipFile ? 'ប្ដូររូបវិក្កយបត្រ ABA' : 'ភ្ជាប់រូបវិក្កយបត្របង់ប្រាក់ (Slip)'}</span>
                       <input 
                         type="file" 
                         accept="image/*" 
                         onChange={handleSlipChange} 
                         style={{ display: 'none' }} 
                       />
+                    </label>
+
+                    <input
+                      type="text"
+                      value={transferRef}
+                      onChange={(e) => setTransferRef(e.target.value)}
+                      placeholder="ឈ្មោះគណនីអ្នកផ្ញើ ឬ លេខយោង ABA (ស្រេចចិត្ត)"
+                      style={{
+                        width: '100%',
+                        marginTop: '8px',
+                        padding: '7px 10px',
+                        borderRadius: '6px',
+                        border: '1px solid #cbd5e1',
+                        fontSize: '0.78rem',
+                        color: '#0f172a',
+                        background: '#ffffff',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px', fontSize: '0.8rem', color: '#334155', fontWeight: 600, cursor: 'pointer', justifyContent: 'center' }}>
+                      <input
+                        type="checkbox"
+                        checked={paidClaimed || Boolean(slipFile) || Boolean(transferRef.trim())}
+                        onChange={(e) => setPaidClaimed(e.target.checked)}
+                      />
+                      <span>ខ្ញុំបានស្កេនបង់លុយចូល ABA {ABA_DISPLAY_NAME} រួចរាល់ (រង់ចាំ Admin Approve)</span>
                     </label>
 
                     {slipPreview && (

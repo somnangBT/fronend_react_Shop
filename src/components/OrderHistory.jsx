@@ -249,7 +249,16 @@ const OrderHistory = () => {
                         <span>សរុបទឹកប្រាក់៖</span> ${parseFloat(order.total || 0).toFixed(2)}
                       </div>
                       <div className="order-items-badge">
-                        📦 {itemsCount} មុខទំនិញ • {order.payment_method === 'bakong_aba' ? 'Bakong / ABA' : order.payment_method?.toUpperCase()}
+                        📦 {itemsCount} មុខទំនិញ •{' '}
+                        {order.payment_method === 'khqr' || order.payment_method === 'bakong_aba'
+                          ? 'ABA KHQR'
+                          : order.payment_method?.toUpperCase() || 'COD'}{' '}
+                        •{' '}
+                        {order.payment_status === 'paid'
+                          ? '✅ បានទូទាត់'
+                          : order.payment_status === 'awaiting_approval'
+                          ? '🧾 រង់ចាំ Admin អនុម័ត'
+                          : '⏳ រង់ចាំទូទាត់'}
                       </div>
                     </div>
                     <button
@@ -323,6 +332,50 @@ const OrderHistory = () => {
                           <span>សរុបចុងក្រោយ (Total)</span>
                           <span>${parseFloat(order.total || 0).toFixed(2)}</span>
                         </div>
+
+                        <div className="cost-row">
+                          <span>ស្ថានភាពទូទាត់ (Payment Status)</span>
+                          <span>
+                            {order.payment_status === 'paid'
+                              ? '✅ បានទូទាត់ (Paid)'
+                              : order.payment_status === 'awaiting_approval'
+                              ? '🧾 រង់ចាំ Admin អនុម័ត (Awaiting Approval)'
+                              : '⏳ រង់ចាំទូទាត់ (Pending)'}
+                          </span>
+                        </div>
+
+                        {order.bakong_ref && (
+                          <div className="order-shipping-meta">
+                            <span className="meta-label">🔖 លេខយោង / អ្នកផ្ញើ ABA៖</span>
+                            <span className="meta-value">{order.bakong_ref}</span>
+                          </div>
+                        )}
+
+                        {order.payment_proof && (
+                          <div className="order-shipping-meta">
+                            <span className="meta-label">🧾 បង្កាន់ដៃទូទាត់ (Slip)៖</span>
+                            <span className="meta-value">
+                              {order.payment_proof.startsWith('data:image/') ? (
+                                <img
+                                  src={order.payment_proof}
+                                  alt="Payment Slip"
+                                  style={{ maxWidth: '180px', borderRadius: '8px', marginTop: '6px', border: '1px solid rgba(255,255,255,0.2)' }}
+                                />
+                              ) : order.payment_proof.startsWith('http://') || order.payment_proof.startsWith('https://') ? (
+                                <a
+                                  href={order.payment_proof}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{ color: '#38bdf8', textDecoration: 'underline' }}
+                                >
+                                  មើលរូបបង្កាន់ដៃ (View Slip)
+                                </a>
+                              ) : (
+                                order.payment_proof
+                              )}
+                            </span>
+                          </div>
+                        )}
 
                         {order.shipping_address && (
                           <div className="order-shipping-meta">
