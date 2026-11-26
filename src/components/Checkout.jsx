@@ -17,34 +17,64 @@ import {
 } from '../utils/khqr';
 import "./styles/Checkout.css";
 
+const CHECKOUT_DRAFT_KEY = 'luckshop_checkout_draft_v1';
+const CHECKOUT_COMPLETED_KEY = 'luckshop_checkout_completed_v1';
+
+const readSessionState = (key) => {
+  try {
+    const raw = sessionStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch (_) {
+    return null;
+  }
+};
+
 const Checkout = () => {
   const { cartItems, cartCount, clearCart, subtotal, taxes, shipping, discount, total } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [restoredState] = useState(() => {
+    const savedCompleted = readSessionState(CHECKOUT_COMPLETED_KEY);
+    if (savedCompleted?.orderComplete && savedCompleted?.orderId && cartCount === 0) {
+      return { completed: savedCompleted, draft: null };
+    }
+    return { completed: null, draft: readSessionState(CHECKOUT_DRAFT_KEY) };
+  });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [orderComplete, setOrderComplete] = useState(false);
-  const [orderId, setOrderId] = useState(null);
-  const [finalOrderStatus, setFinalOrderStatus] = useState(null);
-  const [liveDeliveryStatus, setLiveDeliveryStatus] = useState('pending');
+  const [orderComplete, setOrderComplete] = useState(() => Boolean(restoredState.completed));
+  const [orderId, setOrderId] = useState(() => restoredState.completed?.orderId ?? null);
+  const [finalOrderStatus, setFinalOrderStatus] = useState(() => restoredState.completed?.finalOrderStatus ?? null);
+  const [liveDeliveryStatus, setLiveDeliveryStatus] = useState(() => restoredState.completed?.liveDeliveryStatus ?? 'pending');
 
   // Payment method: 'khqr' (default) or 'cash'
-  const [paymentMethod, setPaymentMethod] = useState('khqr');
+  const [paymentMethod, setPaymentMethod] = useState(
+    () => restoredState.completed?.paymentMethod || restoredState.draft?.paymentMethod || 'khqr'
+  );
   // KHQR Sub-Provider: 'bakong' (Default Auto-Verify) or 'aba' (Direct ABA 007 842 694)
-  const [khqrProvider, setKhqrProvider] = useState('bakong');
+  const [khqrProvider, setKhqrProvider] = useState(
+    () => restoredState.completed?.khqrProvider || restoredState.draft?.khqrProvider || 'bakong'
+  );
   const [slipFile, setSlipFile] = useState(null);
   const [slipPreview, setSlipPreview] = useState(null);
 
   // Real Bakong API + ABA KHQR State
-  const [khqrData, setKhqrData] = useState(null);
-  const [paidVerified, setPaidVerified] = useState(false);
-  const [bakongRef, setBakongRef] = useState(null);
-  const [bakongSender, setBakongSender] = useState(null);
+  const [khqrData, setKhqrData] = useState(() => restoredState.draft?.khqrData || null);
+  const [paidVerified, setPaidVerified] = useState(
+    () => Boolean(restoredState.completed?.paidVerified ?? restoredState.draft?.paidVerified)
+  );
+  const [bakongRef, setBakongRef] = useState(
+    () => restoredState.completed?.bakongRef || restoredState.draft?.bakongRef || null
+  );
+  const [bakongSender, setBakongSender] = useState(
+    () => restoredState.completed?.bakongSender || restoredState.draft?.bakongSender || null
+  );
   const [checkingPayment, setCheckingPayment] = useState(false);
   const [paidPopup, setPaidPopup] = useState(null);
-  const [transferRef, setTransferRef] = useState('');
-  const [paidClaimed, setPaidClaimed] = useState(false);
+  const [transferRef, setTransferRef] = useState(() => restoredState.draft?.transferRef || '');
+  const [paidClaimed, setPaidClaimed] = useState(() => Boolean(restoredState.draft?.paidClaimed));
   const autoSubmittedMd5Ref = useRef(null);
 
   const playPaidChime = () => {
@@ -67,23 +97,85 @@ const Checkout = () => {
     } catch (_) {}
   };
 
-  // Generate KHQR whenever payment mode or total changes (unless already paid/completed)
+  // Persist active payment draft state across page reloads
+  useEffect(() => {
+    if (orderComplete || cartCount === 0) return;
+    try {
+      sessionStorage.setItem(
+        CHECKOUT_DRAFT_KEY,
+        JSON.stringify({
+          paymentMethod,
+          khqrProvider,
+          khqrData,
+          paidVerified,
+          bakongRef,
+          bakongSender,
+          transferRef,
+          paidClaimed,
+        })
+      );
+    } catch (_) {}
+  }, [orderComplete, cartCount, paymentMethod, khqrProvider, khqrData, paidVerified, bakongRef, bakongSender, transferRef, paidClaimed]);
+
+  // Persist completed order & live tracking status across page reloads
+  useEffect(() => {
+    if (!orderComplete || !orderId) return;
+    try {
+      sessionStorage.removeItem(CHECKOUT_DRAFT_KEY);
+      sessionStorage.setItem(
+        CHECKOUT_COMPLETED_KEY,
+        JSON.stringify({
+          orderComplete: true,
+          orderId,
+          liveDeliveryStatus,
+          finalOrderStatus,
+          paymentMethod,
+          khqrProvider,
+          bakongRef,
+          bakongSender,
+          paidVerified,
+        })
+      );
+    } catch (_) {}
+  }, [orderComplete, orderId, liveDeliveryStatus, finalOrderStatus, paymentMethod, khqrProvider, bakongRef, bakongSender, paidVerified]);
+
+  // Generate KHQR whenever payment mode or total changes (reusing matching non-expired QR across refresh)
   useEffect(() => {
     if (paymentMethod !== 'khqr' || total <= 0 || orderComplete || paidVerified) {
       return;
     }
+    const targetAmount = parseFloat(total.toFixed(2));
+    if (
+      khqrData &&
+      khqrData.provider === khqrProvider &&
+      Number(khqrData.amount) === targetAmount &&
+      (!khqrData.expiresAt || Date.now() < khqrData.expiresAt - 60000)
+    ) {
+      return;
+    }
     if (khqrProvider === 'bakong') {
       const generated = generateBakongApiKhqr({
-        amount: parseFloat(total.toFixed(2)),
+        amount: targetAmount,
         currency: 'USD',
       });
-      setKhqrData(generated);
+      setKhqrData({
+        ...generated,
+        provider: 'bakong',
+        amount: targetAmount,
+        expiresAt: Date.now() + 14 * 60 * 1000,
+      });
       setBakongRef(null);
       setBakongSender(null);
     } else {
-      setKhqrData(generateAbaKhqr({ currency: 'USD' }));
+      const generated = generateAbaKhqr({ currency: 'USD' });
+      setKhqrData({
+        ...generated,
+        provider: 'aba',
+        amount: targetAmount,
+        expiresAt: Date.now() + 30 * 60 * 1000,
+      });
     }
-  }, [paymentMethod, khqrProvider, total, orderComplete, paidVerified]);
+  }, [paymentMethod, khqrProvider, total, orderComplete, paidVerified, khqrData]);
 
   const handleCopyText = (text, label) => {
     if (navigator?.clipboard?.writeText) {
@@ -295,11 +387,33 @@ const Checkout = () => {
 
       if (response.ok && (data.status === 'success' || data.success)) {
         const createdOrderId = data.order_id || data.order?.id;
+        const resolvedLiveStatus = data.order?.status || 'pending';
+        const resolvedPaymentStatus = data.payment_status || data.order?.payment_status || (isPaidVerifiedFlag ? 'paid' : 'awaiting_approval');
+        const resolvedBakongRef = data.bakong_ref || data.order?.bakong_ref || bakongRef || null;
+
+        try {
+          sessionStorage.removeItem(CHECKOUT_DRAFT_KEY);
+          sessionStorage.setItem(
+            CHECKOUT_COMPLETED_KEY,
+            JSON.stringify({
+              orderComplete: true,
+              orderId: createdOrderId,
+              liveDeliveryStatus: resolvedLiveStatus,
+              finalOrderStatus: resolvedPaymentStatus,
+              paymentMethod,
+              khqrProvider,
+              bakongRef: resolvedBakongRef,
+              bakongSender,
+              paidVerified: isPaidVerifiedFlag || resolvedPaymentStatus === 'paid',
+            })
+          );
+        } catch (_) {}
+
         setOrderId(createdOrderId);
-        setLiveDeliveryStatus(data.order?.status || 'pending');
-        setFinalOrderStatus(data.payment_status || data.order?.payment_status || (isPaidVerifiedFlag ? 'paid' : 'awaiting_approval'));
-        if (data.bakong_ref || data.order?.bakong_ref) {
-          setBakongRef(data.bakong_ref || data.order?.bakong_ref);
+        setLiveDeliveryStatus(resolvedLiveStatus);
+        setFinalOrderStatus(resolvedPaymentStatus);
+        if (resolvedBakongRef) {
+          setBakongRef(resolvedBakongRef);
         }
         setPaidPopup(null);
         setOrderComplete(true);
@@ -410,13 +524,19 @@ const Checkout = () => {
             <div className="success-actions">
               <button
                 className="view-orders-btn"
-                onClick={() => navigate('/account/orders')}
+                onClick={() => {
+                  try { sessionStorage.removeItem(CHECKOUT_COMPLETED_KEY); } catch (_) {}
+                  navigate('/account/orders');
+                }}
               >
                 មើលប្រវត្តិបញ្ជាទិញ ➔
               </button>
               <button
                 className="continue-shopping-btn"
-                onClick={() => navigate('/products')}
+                onClick={() => {
+                  try { sessionStorage.removeItem(CHECKOUT_COMPLETED_KEY); } catch (_) {}
+                  navigate('/products');
+                }}
               >
                 បន្តទិញទំនិញបន្ថែម
               </button>

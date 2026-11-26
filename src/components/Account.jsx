@@ -7,7 +7,13 @@ const Account = () => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('profile');
+    const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('luckshop_account_tab') || 'profile');
+
+    useEffect(() => {
+        try {
+            sessionStorage.setItem('luckshop_account_tab', activeTab);
+        } catch (_) {}
+    }, [activeTab]);
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState({
         name: '',
