@@ -24,15 +24,12 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(9, 9, 11, 0.7);
+  background-color: rgba(9, 9, 11, 0.8);
   background-image: linear-gradient(
     to bottom,
-    rgba(9, 9, 11, 0.9),
-    rgba(9, 9, 11, 0.7)
-  ),
-  url('https://via.placeholder.com/1920x600?text=Products+Background');
-  background-size: cover;
-  background-position: center;
+    rgba(9, 9, 11, 0.92),
+    rgba(9, 9, 11, 0.72)
+  );
   z-index: 1;
   pointer-events: none;
 }
