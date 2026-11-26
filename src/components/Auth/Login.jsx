@@ -509,12 +509,15 @@ const Login = () => {
 
         <div className="login-decoration">
           <div className="login-image-container">
-            <div className="neon-circle"></div>
-            <div className="neon-circle-inner"></div>
-            <div className="neon-line line-1"></div>
-            <div className="neon-line line-2"></div>
-            <div className="neon-line line-3"></div>
-            <div className="neon-text">SECURE LOGIN</div>
+            <div className="login-brand-showcase">
+              <img
+                src="/logo512.png"
+                alt="LuckShop Logo"
+                className="login-brand-logo"
+              />
+              <h2 className="login-brand-title">Luck<span>Shop</span></h2>
+              <p className="login-brand-subtitle">ទំនិញគុណភាព • តម្លៃសមរម្យ • ទំនុកចិត្ត</p>
+            </div>
           </div>
         </div>
       </div>
