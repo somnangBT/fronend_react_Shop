@@ -12,6 +12,7 @@ const CardProduct = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState("all");
+  const [searchTerm, setSearchTerm] = useState(() => new URLSearchParams(location.search).get("q") || "");
   const [categories, setCategories] = useState(["all"]);
 
   // Fetch categories from API
@@ -66,14 +67,20 @@ const CardProduct = () => {
     fetchProducts();
   }, [fetchCategories, fetchProducts]);
 
-  // Handle URL query parameters (?category=...)
+  // Handle URL query parameters (?category=... and ?q=...)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const catParam = params.get("category");
+    const qParam = params.get("q");
     if (catParam) {
       setActiveCategory(catParam);
     }
-  }, [location.search]);
+    if (qParam !== null) {
+      setSearchTerm(qParam);
+    } else if (location.pathname === "/products") {
+      setSearchTerm("");
+    }
+  }, [location.search, location.pathname]);
 
   // Listen to custom 'filter-category' event dispatched from Hero or Navbar
   useEffect(() => {
@@ -97,10 +104,9 @@ const CardProduct = () => {
     };
   }, [categories]);
 
-  // Filter products by active category or search query
+  // Instant auto-filter products by typed search text (name, code, price, category) and category pill
   const filteredProducts = useMemo(() => {
-    const params = new URLSearchParams(location.search);
-    const searchQ = params.get("q")?.toLowerCase();
+    const searchQ = searchTerm.trim().toLowerCase();
 
     let list = products;
 
@@ -108,8 +114,10 @@ const CardProduct = () => {
       list = list.filter(
         (p) =>
           p.pro_name?.toLowerCase().includes(searchQ) ||
+          p.pro_code?.toLowerCase().includes(searchQ) ||
           p.description?.toLowerCase().includes(searchQ) ||
-          p.category?.cat_name?.toLowerCase().includes(searchQ)
+          p.category?.cat_name?.toLowerCase().includes(searchQ) ||
+          String(p.price ?? "").toLowerCase().includes(searchQ)
       );
     }
 
@@ -125,7 +133,7 @@ const CardProduct = () => {
         actLower.includes(catLower)
       );
     });
-  }, [products, activeCategory, location.search]);
+  }, [products, activeCategory, searchTerm]);
 
   const calculateDiscountedPrice = (price, discount) => {
     const originalPrice = parseFloat(price);
@@ -220,6 +228,58 @@ const CardProduct = () => {
           </p>
         </div>
 
+        {/* Instant Auto-Search Box (0ms client filter) */}
+        <div style={{ maxWidth: '480px', margin: '0 auto 1.25rem', position: 'relative' }}>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="🔍 វាយឈ្មោះ លេខកូដ ឬតម្លៃទំនិញ... (ស្វែងរកអូតូភ្លាមៗ)"
+            aria-label="ស្វែងរកទំនិញ"
+            style={{
+              width: '100%',
+              padding: '12px 42px 12px 18px',
+              borderRadius: '999px',
+              border: '1px solid rgba(251, 191, 36, 0.35)',
+              background: 'rgba(15, 23, 42, 0.85)',
+              color: '#f8fafc',
+              fontSize: '0.94rem',
+              outline: 'none',
+              boxSizing: 'border-box',
+              boxShadow: '0 4px 18px rgba(0, 0, 0, 0.25)',
+            }}
+          />
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchTerm("");
+                if (new URLSearchParams(location.search).get("q")) {
+                  navigate("/products", { replace: true });
+                }
+              }}
+              title="សម្អាតការស្វែងរក"
+              style={{
+                position: 'absolute',
+                right: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'rgba(255, 255, 255, 0.14)',
+                color: '#f8fafc',
+                border: 'none',
+                borderRadius: '50%',
+                width: '26px',
+                height: '26px',
+                cursor: 'pointer',
+                fontWeight: 700,
+                lineHeight: 1,
+              }}
+            >
+              ×
+            </button>
+          )}
+        </div>
+
         {/* Dynamic Category Filter Pills */}
         <div className="category-filter">
           {categories.map((category) => (
@@ -237,8 +297,15 @@ const CardProduct = () => {
         {filteredProducts.length === 0 ? (
           <div className="no-products">
             <div className="no-products-icon">📦</div>
-            <p>មិនមានមុខទំនិញនៅក្នុងប្រភេទនេះនៅឡើយទេ</p>
-            <button className="category-btn active" onClick={() => setActiveCategory("all")}>
+            <p>មិនមានមុខទំនិញត្រូវតាមការស្វែងរកនេះទេ</p>
+            <button
+              className="category-btn active"
+              onClick={() => {
+                setActiveCategory("all");
+                setSearchTerm("");
+                if (location.search) navigate("/products", { replace: true });
+              }}
+            >
               បង្ហាញទាំងអស់
             </button>
           </div>

@@ -17,6 +17,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef(null);
+  const searchDebounceRef = useRef(null);
 
   // Handle scroll event to change navbar style when scrolled
   useEffect(() => {
@@ -32,12 +33,24 @@ const Navbar = () => {
     };
   }, []);
 
-  // Close menus when route changes
+  // Close menus when route pathname changes (keeps search open while typing live ?q= query)
   useEffect(() => {
     setIsMobileMenuOpen(false);
     setIsSearchOpen(false);
     setIsAccountDropdownOpen(false);
-  }, [location]);
+  }, [location.pathname]);
+
+  // Keep Navbar search input synced with ?q=
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    setSearchQuery(params.get('q') || '');
+  }, [location.search]);
+
+  useEffect(() => {
+    return () => {
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    };
+  }, []);
 
   // Click outside to close Account dropdown
   useEffect(() => {
@@ -70,9 +83,32 @@ const Navbar = () => {
     if (isSearchOpen) setIsSearchOpen(false);
   };
 
-  const handleSearch = async (e) => {
-    if (e.key === 'Enter' && searchQuery.trim()) {
-      navigate(`/products?q=${encodeURIComponent(searchQuery.trim())}`);
+  const handleSearchChange = (e) => {
+    const val = e.target.value;
+    setSearchQuery(val);
+
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      const trimmed = val.trim();
+      if (trimmed) {
+        navigate(`/products?q=${encodeURIComponent(trimmed)}`, {
+          replace: location.pathname === '/products',
+        });
+      } else if (location.pathname === '/products') {
+        navigate('/products', { replace: true });
+      }
+    }, 220);
+  };
+
+  const handleSearch = (e) => {
+    if (e.key === 'Enter') {
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+      const trimmed = searchQuery.trim();
+      if (trimmed) {
+        navigate(`/products?q=${encodeURIComponent(trimmed)}`);
+      } else if (location.pathname === '/products') {
+        navigate('/products');
+      }
       setIsSearchOpen(false);
     }
   };
@@ -168,7 +204,7 @@ const Navbar = () => {
               placeholder="ស្វែងរកទំនិញ..."
               className="search-input"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleSearchChange}
               onKeyDown={handleSearch}
             />
             <button className="search-button" onClick={toggleSearch} title="ស្វែងរក">
