@@ -312,17 +312,27 @@ const Checkout = () => {
     }, 100);
   };
 
-  // Handle order submission (supports auto-submit on Bakong verified payment or manual submit)
+  // Handle order submission (supports auto-submit on Bakong verified payment, ABA with slip, or Cash COD)
   const handleSubmitOrder = async (arg = {}) => {
     const opts = arg && typeof arg.preventDefault !== 'function' ? arg : {};
-    setLoading(true);
-    setError('');
-
     const isBakongMode = paymentMethod === 'khqr' && khqrProvider === 'bakong';
     const resolvedMethod = opts.overrideMethod || (paymentMethod === 'khqr' ? (isBakongMode ? 'khqr' : 'aba_khqr') : 'cash');
     const resolvedMd5 = opts.overrideMd5 ?? (isBakongMode ? (khqrData?.md5 || null) : null);
     const resolvedRef = opts.overrideRef ?? (isBakongMode ? (bakongRef || transferRef.trim() || null) : (transferRef.trim() || null));
     const isPaidVerifiedFlag = Boolean(opts.overridePaid || paidVerified);
+
+    // Block placing unpaid KHQR orders from UI
+    if (resolvedMethod === 'khqr' && !isPaidVerifiedFlag) {
+      setError('សូមស្កេនបង់ប្រាក់តាម Bakong KHQR ជាមុនសិន! ប្រព័ន្ធនឹងបញ្ជាក់ដោយស្វ័យប្រវត្តិពេលលុយចូល។');
+      return;
+    }
+    if (resolvedMethod === 'aba_khqr' && !isPaidVerifiedFlag && !slipFile) {
+      setError('សម្រាប់ការបង់តាម ABA សូមផ្ទេរប្រាក់ រួចភ្ជាប់រូបវិក្កយបត្របង់ប្រាក់ (Slip) ជាមុនសិន!');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
 
     try {
       // 1. Upload payment slip to ImgBB if attached
@@ -340,7 +350,13 @@ const Checkout = () => {
             paymentProofUrl = imgbbData.data.url;
           }
         } catch (imgbbErr) {
-          console.warn('Slip upload skipped:', imgbbErr);
+          console.warn('Slip upload failed:', imgbbErr);
+        }
+
+        if (resolvedMethod === 'aba_khqr' && !paymentProofUrl) {
+          setError('មិនអាចបង្ហោះរូបវិក្កយបត្រ (Slip) បានទេ។ សូមពិនិត្យអ៊ីនធឺណិត រួចសាកល្បងម្ដងទៀត។');
+          setLoading(false);
+          return;
         }
       }
 
@@ -885,60 +901,53 @@ const Checkout = () => {
                     <span>Canadia</span>
                   </div>
 
-                  {/* Slip Upload Box + Sender Ref + Manual Paid Confirmation */}
-                  <div className="khqr-slip-box">
-                    <label className="slip-upload-btn">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
-                        <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-                      </svg>
-                      <span>{slipFile ? 'ប្ដូររូបវិក្កយបត្រ' : 'ភ្ជាប់រូបវិក្កយបត្របង់ប្រាក់ (Slip)'}</span>
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        onChange={handleSlipChange} 
-                        style={{ display: 'none' }} 
-                      />
-                    </label>
+                  {/* Slip Upload Box + Sender Ref (Only for ABA Direct KHQR; Bakong Auto-Pay verifies live via NBC API) */}
+                  {khqrProvider === 'aba' ? (
+                    <div className="khqr-slip-box">
+                      <label className="slip-upload-btn" style={{ border: !slipFile ? '1.5px dashed #38bdf8' : undefined }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
+                          <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                        </svg>
+                        <span>{slipFile ? '✓ បានភ្ជាប់រូបវិក្កយបត្រ (ចុចដើម្បីប្ដូរ)' : '📸 ភ្ជាប់រូបវិក្កយបត្របង់ប្រាក់ ABA (តម្រូវឱ្យភ្ជាប់)'}</span>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          onChange={handleSlipChange} 
+                          style={{ display: 'none' }} 
+                        />
+                      </label>
 
-                    <input
-                      type="text"
-                      value={transferRef}
-                      onChange={(e) => setTransferRef(e.target.value)}
-                      placeholder={
-                        khqrProvider === 'bakong'
-                          ? 'លេខយោង / ឈ្មោះគណនីអ្នកផ្ញើ (ស្រេចចិត្ត)'
-                          : 'ឈ្មោះគណនីអ្នកផ្ញើ ឬ លេខយោង ABA (ស្រេចចិត្ត)'
-                      }
-                      style={{
-                        width: '100%',
-                        marginTop: '8px',
-                        padding: '7px 10px',
-                        borderRadius: '6px',
-                        border: '1px solid #cbd5e1',
-                        fontSize: '0.78rem',
-                        color: '#0f172a',
-                        background: '#ffffff',
-                        boxSizing: 'border-box'
-                      }}
-                    />
-
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px', fontSize: '0.8rem', color: '#334155', fontWeight: 600, cursor: 'pointer', justifyContent: 'center' }}>
                       <input
-                        type="checkbox"
-                        checked={paidVerified || paidClaimed || Boolean(slipFile) || Boolean(transferRef.trim())}
-                        onChange={(e) => setPaidClaimed(e.target.checked)}
+                        type="text"
+                        value={transferRef}
+                        onChange={(e) => setTransferRef(e.target.value)}
+                        placeholder="ឈ្មោះគណនីអ្នកផ្ញើ ឬ លេខយោង ABA (ស្រេចចិត្ត)"
+                        style={{
+                          width: '100%',
+                          marginTop: '8px',
+                          padding: '7px 10px',
+                          borderRadius: '6px',
+                          border: '1px solid #cbd5e1',
+                          fontSize: '0.78rem',
+                          color: '#0f172a',
+                          background: '#ffffff',
+                          boxSizing: 'border-box'
+                        }}
                       />
-                      <span>ខ្ញុំបានស្កេនបង់លុយរួចរាល់ (រង់ចាំ Admin Approve ដឹកជញ្ជូន)</span>
-                    </label>
 
-                    {slipPreview && (
-                      <div className="slip-preview-item">
-                        <img src={slipPreview} alt="Receipt preview" className="slip-img" />
-                        <span className="slip-status">✓ បានភ្ជាប់រួចរាល់</span>
-                        <button type="button" onClick={handleRemoveSlip} className="slip-remove">លុបចេញ</button>
-                      </div>
-                    )}
-                  </div>
+                      {slipPreview && (
+                        <div className="slip-preview-item">
+                          <img src={slipPreview} alt="Receipt preview" className="slip-img" />
+                          <span className="slip-status">✓ បានភ្ជាប់រួចរាល់</span>
+                          <button type="button" onClick={handleRemoveSlip} className="slip-remove">លុបចេញ</button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div style={{ marginTop: '8px', fontSize: '0.78rem', color: '#334155', textAlign: 'center', fontWeight: 600 }}>
+                      ⚡ ស្កេនតាម Bakong KHQR ប្រព័ន្ធនឹងផ្ទៀងផ្ទាត់លុយចូល និងបញ្ជាក់ការទិញដោយស្វ័យប្រវត្តិ (មិនបាច់ថត Slip ទេ)
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -991,28 +1000,52 @@ const Checkout = () => {
             )}
           </div>
 
-          {/* Section 4: Action Buttons */}
+          {/* Section 4: Action Buttons (Only show Confirm Order button for Cash, Bakong Verified, or ABA with Slip) */}
           <div className="checkout-actions">
-            <button
-              className="place-order-btn"
-              onClick={handleSubmitOrder}
-              disabled={loading}
-            >
-              {loading ? (
-                <span>កំពុងដំណើរការបញ្ជាទិញ...</span>
-              ) : (
-                <>
-                  <span>
-                    {paymentMethod === 'khqr' 
-                      ? (slipFile ? 'បញ្ជាក់ការបញ្ជាទិញ (បានភ្ជាប់វិក្កយបត្រ)' : 'បញ្ជាក់ការបញ្ជាទិញ (បង់តាម KHQR)') 
-                      : 'បញ្ជាក់ការបញ្ជាទិញ (ទូទាត់ពេលដឹក)'}
-                  </span>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.13-.05-.18-.06-.05-.15-.03-.21-.02-.1.02-1.5.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.2.14.28-.01.07.01.23-.01.35z"/>
-                  </svg>
-                </>
-              )}
-            </button>
+            {(paymentMethod === 'cash' ||
+              (paymentMethod === 'khqr' && khqrProvider === 'bakong' && paidVerified) ||
+              (paymentMethod === 'khqr' && khqrProvider === 'aba' && Boolean(slipFile))) ? (
+              <button
+                className="place-order-btn"
+                onClick={handleSubmitOrder}
+                disabled={loading}
+              >
+                {loading ? (
+                  <span>កំពុងដំណើរការបញ្ជាទិញ...</span>
+                ) : (
+                  <>
+                    <span>
+                      {paymentMethod === 'cash'
+                        ? 'បញ្ជាក់ការបញ្ជាទិញ (ទូទាត់ពេលដឹក)'
+                        : paidVerified
+                        ? '✅ បានទូទាត់រួចរាល់ — បញ្ជាក់ការបញ្ជាទិញ'
+                        : '✅ បញ្ជាក់ការបញ្ជាទិញ (បានភ្ជាប់វិក្កយបត្រ ABA)'}
+                    </span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.13-.05-.18-.06-.05-.15-.03-.21-.02-.1.02-1.5.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.2.14.28-.01.07.01.23-.01.35z"/>
+                    </svg>
+                  </>
+                )}
+              </button>
+            ) : (
+              <div
+                style={{
+                  width: '100%',
+                  padding: '14px 16px',
+                  borderRadius: '12px',
+                  background: 'rgba(14, 165, 233, 0.12)',
+                  border: '1px solid rgba(56, 189, 248, 0.35)',
+                  color: '#bae6fd',
+                  fontSize: '0.88rem',
+                  fontWeight: 600,
+                  textAlign: 'center',
+                }}
+              >
+                {khqrProvider === 'bakong'
+                  ? '⏳ សូមស្កេនបង់ប្រាក់តាម Bakong KHQR ខាងលើ — ប្រព័ន្ធនឹងបញ្ជាក់ការបញ្ជាទិញដោយស្វ័យប្រវត្តិពេលលុយចូល!'
+                  : '📸 សូមផ្ទេរប្រាក់តាម ABA រួចភ្ជាប់រូបវិក្កយបត្រ (Slip) ខាងលើ ដើម្បីបើកប៊ូតុងបញ្ជាក់ការបញ្ជាទិញ'}
+              </div>
+            )}
 
             <button
               className="back-to-cart-btn"
