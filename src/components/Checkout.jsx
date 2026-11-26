@@ -30,7 +30,7 @@ const readSessionState = (key) => {
 };
 
 const Checkout = () => {
-  const { cartItems, cartCount, clearCart, subtotal, taxes, shipping, discount, total } = useCart();
+  const { cartItems, cartCount, clearCart, subtotal, taxes, shipping, discount, total, promoCode } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -75,7 +75,28 @@ const Checkout = () => {
   const [paidPopup, setPaidPopup] = useState(null);
   const [transferRef, setTransferRef] = useState(() => restoredState.draft?.transferRef || '');
   const [paidClaimed, setPaidClaimed] = useState(() => Boolean(restoredState.draft?.paidClaimed));
+  const [customerName, setCustomerName] = useState(
+    () => restoredState.draft?.customerName ?? (user?.name || user?.email?.split('@')[0] || '')
+  );
+  const [phone, setPhone] = useState(() => restoredState.draft?.phone ?? (user?.phone || ''));
+  const [shippingAddress, setShippingAddress] = useState(
+    () => restoredState.draft?.shippingAddress ?? (user?.address || '')
+  );
+  const [notes, setNotes] = useState(() => restoredState.draft?.notes ?? '');
   const autoSubmittedMd5Ref = useRef(null);
+
+  // Fill empty delivery fields from user profile once available
+  useEffect(() => {
+    if (!user) return;
+    setCustomerName((prev) => prev || user.name || user.email?.split('@')[0] || '');
+    setPhone((prev) => prev || user.phone || '');
+    setShippingAddress((prev) => prev || user.address || '');
+  }, [user]);
+
+  const cleanedPhone = phone.replace(/[^0-9+]/g, '');
+  const isDeliveryValid = Boolean(
+    customerName.trim() && cleanedPhone.length >= 8 && shippingAddress.trim().length >= 3
+  );
 
   const playPaidChime = () => {
     try {
@@ -112,10 +133,29 @@ const Checkout = () => {
           bakongSender,
           transferRef,
           paidClaimed,
+          customerName,
+          phone,
+          shippingAddress,
+          notes,
         })
       );
     } catch (_) {}
-  }, [orderComplete, cartCount, paymentMethod, khqrProvider, khqrData, paidVerified, bakongRef, bakongSender, transferRef, paidClaimed]);
+  }, [
+    orderComplete,
+    cartCount,
+    paymentMethod,
+    khqrProvider,
+    khqrData,
+    paidVerified,
+    bakongRef,
+    bakongSender,
+    transferRef,
+    paidClaimed,
+    customerName,
+    phone,
+    shippingAddress,
+    notes,
+  ]);
 
   // Persist completed order & live tracking status across page reloads
   useEffect(() => {
@@ -139,9 +179,9 @@ const Checkout = () => {
     } catch (_) {}
   }, [orderComplete, orderId, liveDeliveryStatus, finalOrderStatus, paymentMethod, khqrProvider, bakongRef, bakongSender, paidVerified]);
 
-  // Generate KHQR whenever payment mode or total changes (reusing matching non-expired QR across refresh)
+  // Generate KHQR whenever delivery info is valid and payment mode or total changes
   useEffect(() => {
-    if (paymentMethod !== 'khqr' || total <= 0 || orderComplete || paidVerified) {
+    if (paymentMethod !== 'khqr' || !isDeliveryValid || total <= 0 || orderComplete || paidVerified) {
       return;
     }
     const targetAmount = parseFloat(total.toFixed(2));
@@ -175,7 +215,7 @@ const Checkout = () => {
         expiresAt: Date.now() + 30 * 60 * 1000,
       });
     }
-  }, [paymentMethod, khqrProvider, total, orderComplete, paidVerified, khqrData]);
+  }, [paymentMethod, khqrProvider, isDeliveryValid, total, orderComplete, paidVerified, khqrData]);
 
   const handleCopyText = (text, label) => {
     if (navigator?.clipboard?.writeText) {
@@ -190,6 +230,7 @@ const Checkout = () => {
     if (
       paymentMethod !== 'khqr' ||
       khqrProvider !== 'bakong' ||
+      !isDeliveryValid ||
       !khqrData?.md5 ||
       paidVerified ||
       orderComplete
@@ -251,6 +292,7 @@ const Checkout = () => {
     if (
       paymentMethod !== 'khqr' ||
       khqrProvider !== 'bakong' ||
+      !isDeliveryValid ||
       !khqrData?.md5 ||
       paidVerified ||
       orderComplete
@@ -262,7 +304,7 @@ const Checkout = () => {
     }, 3000);
     return () => clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paymentMethod, khqrProvider, khqrData, paidVerified, orderComplete]);
+  }, [paymentMethod, khqrProvider, isDeliveryValid, khqrData, paidVerified, orderComplete]);
 
   // Redirect if cart is empty
   useEffect(() => {
@@ -321,6 +363,22 @@ const Checkout = () => {
     const resolvedRef = opts.overrideRef ?? (isBakongMode ? (bakongRef || transferRef.trim() || null) : (transferRef.trim() || null));
     const isPaidVerifiedFlag = Boolean(opts.overridePaid || paidVerified);
 
+    if (!customerName.trim()) {
+      setPaidPopup(null);
+      setError('សូមបញ្ចូលឈ្មោះអ្នកទទួល!');
+      return;
+    }
+    if (phone.replace(/[^0-9+]/g, '').length < 8) {
+      setPaidPopup(null);
+      setError('សូមបញ្ចូលលេខទូរស័ព្ទត្រឹមត្រូវ (យ៉ាងតិច ៨ ខ្ទង់)!');
+      return;
+    }
+    if (!shippingAddress.trim()) {
+      setPaidPopup(null);
+      setError('សូមបញ្ចូលអាសយដ្ឋានដឹកជញ្ជូន!');
+      return;
+    }
+
     // Block placing unpaid KHQR orders from UI
     if (resolvedMethod === 'khqr' && !isPaidVerifiedFlag) {
       setError('សូមស្កេនបង់ប្រាក់តាម Bakong KHQR ជាមុនសិន! ប្រព័ន្ធនឹងបញ្ជាក់ដោយស្វ័យប្រវត្តិពេលលុយចូល។');
@@ -362,12 +420,14 @@ const Checkout = () => {
 
       // 2. Prepare Order Data
       const orderData = {
-        name: user?.name || user?.email?.split('@')[0] || 'Customer',
-        customer_name: user?.name || user?.email?.split('@')[0] || 'Customer',
+        name: customerName.trim(),
+        customer_name: customerName.trim(),
         email: user?.email || '',
-        phone: user?.phone || '012345678',
-        address: user?.address || 'Phnom Penh, Cambodia',
-        shipping_address: user?.address || 'Phnom Penh, Cambodia',
+        phone: phone.trim(),
+        address: shippingAddress.trim(),
+        shipping_address: shippingAddress.trim(),
+        notes: notes.trim() || null,
+        promo_code: promoCode || null,
         subtotal: parseFloat(subtotal) || parseFloat(total) || 0,
         total: parseFloat(total) || parseFloat(subtotal) || 0,
         total_amount: parseFloat(total) || parseFloat(subtotal) || 0,
@@ -390,12 +450,17 @@ const Checkout = () => {
         user_id: user?.id || null
       };
 
+      const headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      if (user?.token && user.token !== 'token_placeholder') {
+        headers.Authorization = `Bearer ${user.token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/orders`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
         body: JSON.stringify(orderData)
       });
 
@@ -512,7 +577,7 @@ const Checkout = () => {
             </h1>
             <KhmerDivider />
             <p className="success-message">
-              សូមអរគុណសម្រាប់ការបញ្ជាទិញពី DeliciousEats! {orderId && `លេខកូដបញ្ជាទិញរបស់អ្នកគឺ #${orderId}។`}
+              សូមអរគុណសម្រាប់ការបញ្ជាទិញពី LuckShop! {orderId && `លេខកូដបញ្ជាទិញរបស់អ្នកគឺ #${orderId}។`}
             </p>
             {isConfirmedPaid && (
               <div style={{ margin: '12px auto', padding: '12px 16px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.45)', color: '#6ee7b7', fontWeight: 700, fontSize: '0.92rem', maxWidth: '460px' }}>
@@ -530,7 +595,7 @@ const Checkout = () => {
 
             <p className="success-info">
               {liveDeliveryStatus === 'completed'
-                ? '🎉 ការដឹកជញ្ជូនបានបញ្ចប់ដោយជោគជ័យ! អរគុណសម្រាប់ការគាំទ្រ DeliciousEats។'
+                ? '🎉 ការដឹកជញ្ជូនបានបញ្ចប់ដោយជោគជ័យ! អរគុណសម្រាប់ការគាំទ្រ LuckShop។'
                 : liveDeliveryStatus === 'delivering'
                 ? '🛵 Admin បានអនុម័តរួចរាល់ ហើយកំពុងដឹកជញ្ជូនទំនិញដល់ទីតាំងរបស់អ្នក!'
                 : paymentMethod === 'khqr'
@@ -601,17 +666,89 @@ const Checkout = () => {
               <span>ព័ត៌មានអ្នកទទួល & ទីតាំងដឹកជញ្ជូន</span>
             </div>
             <div className="info-card-grid">
-              <div className="info-item">
-                <span className="info-label">ឈ្មោះអ្នកទទួល:</span>
-                <span className="info-value">{user?.name || user?.email?.split('@')[0] || 'អតិថិជន'}</span>
+              <div className="info-item" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '6px' }}>
+                <label className="info-label" htmlFor="checkout-name">ឈ្មោះអ្នកទទួល *</label>
+                <input
+                  id="checkout-name"
+                  type="text"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  disabled={loading || paidVerified}
+                  placeholder="បញ្ចូលឈ្មោះអ្នកទទួល"
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    borderRadius: '8px',
+                    border: !customerName.trim() ? '1px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.16)',
+                    background: 'rgba(15, 23, 42, 0.72)',
+                    color: '#f8fafc',
+                    fontSize: '0.92rem',
+                    boxSizing: 'border-box',
+                  }}
+                />
               </div>
-              <div className="info-item">
-                <span className="info-label">លេខទូរស័ព្ទ:</span>
-                <span className="info-value">{user?.phone || '012 345 678'}</span>
+              <div className="info-item" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '6px' }}>
+                <label className="info-label" htmlFor="checkout-phone">លេខទូរស័ព្ទ *</label>
+                <input
+                  id="checkout-phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  disabled={loading || paidVerified}
+                  placeholder="ឧ. 012 345 678"
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    borderRadius: '8px',
+                    border: cleanedPhone.length < 8 ? '1px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.16)',
+                    background: 'rgba(15, 23, 42, 0.72)',
+                    color: '#f8fafc',
+                    fontSize: '0.92rem',
+                    boxSizing: 'border-box',
+                  }}
+                />
               </div>
-              <div className="info-item full-width">
-                <span className="info-label">អាសយដ្ឋានដឹក:</span>
-                <span className="info-value">{user?.address || 'រាជធានីភ្នំពេញ, កម្ពុជា'}</span>
+              <div className="info-item full-width" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '6px' }}>
+                <label className="info-label" htmlFor="checkout-address">អាសយដ្ឋានដឹកជញ្ជូន *</label>
+                <input
+                  id="checkout-address"
+                  type="text"
+                  value={shippingAddress}
+                  onChange={(e) => setShippingAddress(e.target.value)}
+                  disabled={loading || paidVerified}
+                  placeholder="ផ្ទះលេខ, ផ្លូវ, សង្កាត់/ខណ្ឌ, រាជធានី/ខេត្ត"
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    borderRadius: '8px',
+                    border: shippingAddress.trim().length < 3 ? '1px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.16)',
+                    background: 'rgba(15, 23, 42, 0.72)',
+                    color: '#f8fafc',
+                    fontSize: '0.92rem',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+              <div className="info-item full-width" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '6px' }}>
+                <label className="info-label" htmlFor="checkout-notes">ចំណាំបន្ថែម (ស្រេចចិត្ត)</label>
+                <input
+                  id="checkout-notes"
+                  type="text"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  disabled={loading}
+                  placeholder="ឧ. ហៅមកខ្ញុំពេលមកដល់មុខផ្ទះ..."
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(255, 255, 255, 0.14)',
+                    background: 'rgba(15, 23, 42, 0.55)',
+                    color: '#f8fafc',
+                    fontSize: '0.9rem',
+                    boxSizing: 'border-box',
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -626,19 +763,23 @@ const Checkout = () => {
             </div>
 
             <div className="summary-items">
-              {cartItems.map((item) => (
-                <div className="summary-item" key={item.id}>
-                  <div className="item-info">
-                    <span className="item-qty-badge">{item.quantity}x</span>
-                    <span className="item-name">{item.name}</span>
+              {cartItems.map((item) => {
+                const unitPrice = parseFloat(item.price || 0) * (1 - parseFloat(item.discount || 0) / 100);
+                const lineTotal = unitPrice * item.quantity;
+                return (
+                  <div className="summary-item" key={item.id}>
+                    <div className="item-info">
+                      <span className="item-qty-badge">{item.quantity}x</span>
+                      <span className="item-name">{item.name}</span>
+                    </div>
+                    <div className="item-price-block">
+                      <span className="price-usd">${lineTotal.toFixed(2)}</span>
+                      <span className="price-eq"> = </span>
+                      <span className="price-khr">({formatKHR(lineTotal)})</span>
+                    </div>
                   </div>
-                  <div className="item-price-block">
-                    <span className="price-usd">${(item.price * item.quantity).toFixed(2)}</span>
-                    <span className="price-eq"> = </span>
-                    <span className="price-khr">({formatKHR(item.price * item.quantity)})</span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Calculations */}
@@ -665,7 +806,7 @@ const Checkout = () => {
 
               {discount > 0 && (
                 <div className="summary-row discount">
-                  <span className="row-label">បញ្ចុះតម្លៃ</span>
+                  <span className="row-label">បញ្ចុះតម្លៃ{promoCode ? ` (${promoCode})` : ''}</span>
                   <span className="row-value" style={{ color: '#2ec4b6' }}>-${discount.toFixed(2)}</span>
                 </div>
               )}
@@ -799,6 +940,24 @@ const Checkout = () => {
                     <span className="khqr-khr">{formatKHR(total)}</span>
                   </div>
 
+                  {!isDeliveryValid && !paidVerified ? (
+                    <div
+                      className="khqr-qr-frame"
+                      style={{
+                        padding: '24px 16px',
+                        textAlign: 'center',
+                        color: '#b45309',
+                        background: '#fffbeb',
+                        border: '1px dashed #f59e0b',
+                        borderRadius: '12px',
+                        fontWeight: 700,
+                        fontSize: '0.86rem',
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      ⚠️ សូមបំពេញ ឈ្មោះ លេខទូរស័ព្ទ (យ៉ាងតិច ៨ខ្ទង់) និង អាសយដ្ឋានដឹកជញ្ជូន ខាងលើជាមុនសិន ដើម្បីបង្ហាញ QR កូដបង់ប្រាក់!
+                    </div>
+                  ) : (
                   <div className="khqr-qr-frame">
                     {khqrData?.qr && (
                       <img 
@@ -892,6 +1051,7 @@ const Checkout = () => {
                       </div>
                     )}
                   </div>
+                  )}
 
                   <div className="khqr-banks-support">
                     <span>ABA</span>
@@ -1065,7 +1225,7 @@ const Checkout = () => {
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zm-1 9a1 1 0 01-1-1v-4a1 1 0 112 0v4a1 1 0 01-1 1z" clipRule="evenodd" />
             </svg>
             <p>
-              តាមរយៈការចុចបញ្ជាក់ការបញ្ជាទិញ ព័ត៌មានទំនិញ {slipFile ? 'និងរូបវិក្កយបត្រ ' : ''}នឹងត្រូវបញ្ជូនទៅកាន់ប្រព័ន្ធ Telegram របស់ហាង DeliciousEats ដោយស្វ័យប្រវត្តិ។
+              តាមរយៈការចុចបញ្ជាក់ការបញ្ជាទិញ ព័ត៌មានទំនិញ {slipFile ? 'និងរូបវិក្កយបត្រ ' : ''}នឹងត្រូវបញ្ជូនទៅកាន់ប្រព័ន្ធ Telegram របស់ហាង LuckShop ដោយស្វ័យប្រវត្តិ។
             </p>
           </div>
         </div>

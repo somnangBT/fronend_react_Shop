@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useCart } from "../CartContext";
 import { KhmerDivider, KhmerCorner, KhmerFrieze, KhmerPediment, KhmerPhkaChan, KhmerTevada } from "./KhmerOrnament";
 import { formatKHR } from "../utils/currency";
 import { API_BASE_URL as API_URL } from "../config/api";
@@ -8,6 +9,7 @@ import "./styles/CardProduct.css";
 const CardProduct = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { addToCart } = useCart();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -163,6 +165,9 @@ const CardProduct = () => {
 
   const handleAddToCart = (e, product) => {
     e.stopPropagation();
+    if (!product || product.qty <= 0) return;
+
+    addToCart(product, 1);
 
     const notification = document.createElement("div");
     notification.className = "cart-notification";
@@ -349,14 +354,13 @@ const CardProduct = () => {
                             ? product.image.startsWith("http")
                               ? product.image
                               : `${API_URL}${product.image.startsWith("/") ? "" : "/"}${product.image}`
-                            : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500"
+                            : "/logo512.png"
                         }
                         alt={product.pro_name || "Product Image"}
                         loading="lazy"
                         onError={(e) => {
                           e.target.onerror = null;
-                          e.target.src =
-                            "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500";
+                          e.target.src = "/logo512.png";
                         }}
                       />
                     </div>

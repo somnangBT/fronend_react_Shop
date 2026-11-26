@@ -122,7 +122,11 @@ const OrderHistory = () => {
 
       const response = await fetch(`${API_URL}/api/orders/${orderId}/cancel`, {
         method: 'POST',
-        headers
+        headers,
+        body: JSON.stringify({
+          user_id: currentUser?.id || null,
+          email: currentUser?.email || null
+        })
       });
 
       const result = await response.json();

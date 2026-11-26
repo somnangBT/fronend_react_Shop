@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../config/api';
+import { useAuth } from '../AuthContext';
 import "./styles/Account.css";
 
 const Account = () => {
     const navigate = useNavigate();
+    const { login: syncAuthUser, logout: syncAuthLogout } = useAuth();
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('luckshop_account_tab') || 'profile');
@@ -106,33 +108,63 @@ const Account = () => {
     };
     
     // Handle save profile changes
-    const handleSaveChanges = () => {
+    const handleSaveChanges = async () => {
         // Validate form
         if (!editForm.name.trim() || !editForm.email.trim()) {
             showNotification('Name and email are required.', 'error');
             return;
         }
-        
-        // Update user in local storage or session storage
-        const updatedUser = {
-            ...user,
-            name: editForm.name,
-            email: editForm.email
-        };
-        
-        // Update in the same storage that was used previously
-        if (localStorage.getItem('user')) {
-            localStorage.setItem('user', JSON.stringify(updatedUser));
-        } else {
-            sessionStorage.setItem('user', JSON.stringify(updatedUser));
+
+        if (!user?.id || !user?.token || user.token === 'token_placeholder') {
+            showNotification('សូមចូលគណនីម្ដងទៀត ដើម្បីរក្សាទុកការកែប្រែ!', 'error');
+            return;
         }
-        
-        // Update state
-        setUser(updatedUser);
-        setIsEditing(false);
-        
-        // Show success notification
-        showNotification('Profile updated successfully!', 'success');
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/update-user/${user.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${user.token}`
+                },
+                body: JSON.stringify({
+                    name: editForm.name.trim(),
+                    email: editForm.email.trim()
+                })
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                const firstError = data.errors ? Object.values(data.errors).flat()[0] : null;
+                showNotification(firstError || data.message || 'Failed to update profile.', 'error');
+                return;
+            }
+
+            const updatedUser = {
+                ...user,
+                id: data.user?.id ?? user.id,
+                name: data.user?.name ?? editForm.name.trim(),
+                email: data.user?.email ?? editForm.email.trim(),
+                role: data.user?.role ?? user.role
+            };
+
+            if (localStorage.getItem('user')) {
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+            } else {
+                sessionStorage.setItem('user', JSON.stringify(updatedUser));
+            }
+
+            setUser(updatedUser);
+            syncAuthUser(updatedUser);
+            setIsEditing(false);
+
+            showNotification('Profile updated successfully!', 'success');
+        } catch (err) {
+            console.error('Update profile error:', err);
+            showNotification('Could not connect to server.', 'error');
+        }
     };
     
     // Handle logout
@@ -142,9 +174,8 @@ const Account = () => {
             return;
         }
         
-        // Clear user data from storage
-        localStorage.removeItem('user');
-        sessionStorage.removeItem('user');
+        // Clear user data from AuthContext & storage
+        syncAuthLogout();
         
         // Show notification
         showNotification('Logged out successfully!', 'success');

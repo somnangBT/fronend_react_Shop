@@ -140,21 +140,8 @@ const Navbar = () => {
                 flexShrink: 0,
               }}
             />
-            Delicious<span>Eats</span>
+            Luck<span>Shop</span>
           </Link>
-          <span className="nav-kny-badge" style={{
-            fontSize: '0.72rem',
-            background: 'linear-gradient(135deg, #f59e0b, #dc2626)',
-            color: '#fff',
-            padding: '2px 8px',
-            borderRadius: '12px',
-            fontWeight: 700,
-            boxShadow: '0 2px 6px rgba(220, 38, 38, 0.4)',
-            letterSpacing: 0,
-            whiteSpace: 'nowrap'
-          }}>
-            🏮 ចូលឆ្នាំថ្មី
-          </span>
         </div>
 
         {/* Main Nav Links */}

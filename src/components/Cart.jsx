@@ -8,33 +8,26 @@ import { KhmerDivider, KhmerAngkorCrest } from './KhmerOrnament';
 import "./styles/Cart.css";
 
 const Cart = () => {
-  const { cartItems, cartCount, addToCart, removeFromCart } = useCart();
+  const {
+    cartItems,
+    cartCount,
+    subtotal,
+    shipping,
+    discount,
+    promoPercent,
+    promoCode: activePromoCode,
+    total,
+    removeFromCart,
+    updateQuantity,
+    applyPromoCode,
+  } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [promoCode, setPromoCode] = useState('');
-  const [promoApplied, setPromoApplied] = useState(false);
-  const [promoDiscount, setPromoDiscount] = useState(0);
+  const [promoInput, setPromoInput] = useState(activePromoCode || '');
 
-  // Calculate cart totals
-  const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-  const taxRate = 0; // Friendly shop tax
-  const taxes = subtotal * taxRate;
-  const shippingCost = subtotal > 20 || subtotal === 0 ? 0 : 1.5; // $1.50 local shipping or free > $20
-  const discountAmount = subtotal * (promoDiscount / 100);
-  const total = subtotal + taxes + shippingCost - discountAmount;
-
-  // Handle quantity change
+  // Handle quantity change cleanly via CartContext (preserves discount % and stock limit)
   const handleQuantityChange = (item, change) => {
-    if (item.quantity + change <= 0) {
-      removeFromCart(item.id);
-    } else {
-      addToCart({
-        pro_id: item.id,
-        pro_name: item.name,
-        price: item.price,
-        image: item.image
-      }, change);
-    }
+    updateQuantity(item.id, item.quantity + change);
   };
 
   // Handle remove item
@@ -42,22 +35,18 @@ const Cart = () => {
     removeFromCart(itemId);
   };
 
-  // Handle apply promo code
+  // Handle apply promo code via shared CartContext so Checkout & Backend match 100%
   const handleApplyPromo = () => {
-    const promoCodes = {
-      'KHMER10': 10,
-      'DELICIOUS20': 20,
-      'WELCOME15': 15
-    };
-    const trimmedCode = promoCode.trim().toUpperCase();
-
-    if (promoCodes[trimmedCode]) {
-      setPromoDiscount(promoCodes[trimmedCode]);
-      setPromoApplied(true);
-      showNotification(`បានអនុវត្តកូដ ${trimmedCode} បញ្ចុះ ${promoCodes[trimmedCode]}% ដោយជោគជ័យ!`, 'success');
-    } else if (trimmedCode) {
-      setPromoApplied(false);
-      setPromoDiscount(0);
+    const trimmedCode = promoInput.trim().toUpperCase();
+    if (!trimmedCode) {
+      applyPromoCode('');
+      return;
+    }
+    const res = applyPromoCode(trimmedCode);
+    if (res.valid) {
+      setPromoInput(res.code);
+      showNotification(`បានអនុវត្តកូដ ${res.code} បញ្ចុះ ${res.percent}% ដោយជោគជ័យ!`, 'success');
+    } else {
       showNotification('កូដប្រូម៉ូសិនមិនត្រឹមត្រូវឡើយ។ សូមសាកល្បងម្តងទៀត។', 'error');
     }
   };
@@ -135,12 +124,12 @@ const Cart = () => {
                               ? (item.image.startsWith('http')
                                 ? item.image
                                 : `${API_BASE_URL}${item.image.startsWith('/') ? '' : '/'}${item.image}`)
-                              : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=150"
+                              : '/logo512.png'
                           }
                           alt={item.name}
                           onError={(e) => {
                             e.target.onerror = null;
-                            e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=150';
+                            e.target.src = '/logo512.png';
                           }}
                         />
                       </div>
@@ -184,9 +173,17 @@ const Cart = () => {
 
                     <div className="item-total" data-label="សរុប:">
                       <span className="price-text">
-                        <span className="price-usd total">${(item.price * item.quantity).toFixed(2)}</span>
-                        <span className="price-eq"> = </span>
-                        <span className="price-khr">({formatKHR(item.price * item.quantity)})</span>
+                        {(() => {
+                          const unitPrice = parseFloat(item.price || 0) * (1 - parseFloat(item.discount || 0) / 100);
+                          const lineTotal = unitPrice * item.quantity;
+                          return (
+                            <>
+                              <span className="price-usd total">${lineTotal.toFixed(2)}</span>
+                              <span className="price-eq"> = </span>
+                              <span className="price-khr">({formatKHR(lineTotal)})</span>
+                            </>
+                          );
+                        })()}
                       </span>
                     </div>
 
@@ -218,12 +215,12 @@ const Cart = () => {
                 </div>
                 <div className="summary-row">
                   <span>ថ្លៃដឹកជញ្ជូន</span>
-                  <span>{shippingCost === 0 ? <span className="free-shipping" style={{ color: '#2ec4b6', fontWeight: 600 }}>ឥតគិតថ្លៃ (Free)</span> : `$${shippingCost.toFixed(2)} (~${formatKHR(shippingCost)})`}</span>
+                  <span>{shipping === 0 ? <span className="free-shipping" style={{ color: '#2ec4b6', fontWeight: 600 }}>ឥតគិតថ្លៃ (Free)</span> : `$${shipping.toFixed(2)} (~${formatKHR(shipping)})`}</span>
                 </div>
-                {promoApplied && (
+                {promoPercent > 0 && discount > 0 && (
                   <div className="summary-row discount">
-                    <span>បញ្ចុះតម្លៃ ({promoDiscount}%)</span>
-                    <span style={{ color: '#2ec4b6' }}>-${discountAmount.toFixed(2)}</span>
+                    <span>បញ្ចុះតម្លៃ ({promoPercent}%)</span>
+                    <span style={{ color: '#2ec4b6' }}>-${discount.toFixed(2)}</span>
                   </div>
                 )}
                 <div className="promo-code-container">
@@ -231,8 +228,8 @@ const Cart = () => {
                     type="text"
                     placeholder="កូដប្រូម៉ូសិន (ឧ. KHMER10)"
                     className="promo-input"
-                    value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value)}
+                    value={promoInput}
+                    onChange={(e) => setPromoInput(e.target.value)}
                   />
                   <button
                     className="apply-promo-btn"

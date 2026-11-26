@@ -89,11 +89,16 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/users`, {
-        method: 'GET',
+      const response = await fetch(`${API_BASE_URL}/api/login`, {
+        method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'Accept': 'application/json'
-        }
+        },
+        body: JSON.stringify({
+          email: formData.email.trim(),
+          password: formData.password
+        })
       });
 
       const contentType = response.headers.get("content-type");
@@ -101,38 +106,32 @@ const Login = () => {
         throw new Error("Server returned non-JSON response");
       }
 
-      const users = await response.json();
+      const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch users');
+      if (!response.ok || !data.user || !data.access_token) {
+        const firstError = data.errors ? Object.values(data.errors).flat()[0] : null;
+        throw new Error(firstError || data.message || 'Invalid email or password.');
       }
 
-      const user = users.find(u => u.email === formData.email);
-
-      if (!user) {
-        setError('Email not found. Please check your credentials.');
-        setIsLoading(false);
-        return;
-      }
-
-      // Create user data with role from backend
+      // Create user data with role and real Sanctum token from backend
       const userData = {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role || 'user', // Include role from backend (admin/user)
-        token: user.remember_token || 'token_placeholder'
+        id: data.user.id,
+        email: data.user.email,
+        name: data.user.name,
+        role: data.user.role || 'user',
+        token: data.access_token
       };
 
       login(userData);
 
       if (rememberMe) {
         localStorage.setItem('user', JSON.stringify(userData));
+        sessionStorage.removeItem('user');
       } else {
         sessionStorage.setItem('user', JSON.stringify(userData));
+        localStorage.removeItem('user');
       }
 
-      // Check role after login and show appropriate message
       if (userData.role === 'admin') {
         showNotification('Welcome Admin! Login successful!', 'success');
       } else {
@@ -140,12 +139,7 @@ const Login = () => {
       }
 
       setTimeout(() => {
-        // Redirect based on role
-        if (userData.role === 'admin') {
-          navigate('/admin', { replace: true }); // Admin dashboard
-        } else {
-          navigate(from, { replace: true }); // Normal user redirect
-        }
+        navigate(from && from !== '/admin' ? from : '/', { replace: true });
       }, 1500);
     } catch (err) {
       console.error('Login error:', err);
@@ -160,6 +154,12 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+
+    if (!signupData.name.trim()) {
+      setError('Please enter your full name');
+      setIsLoading(false);
+      return;
+    }
 
     if (!validateEmail(signupData.email)) {
       setError('Please enter a valid email address');
@@ -180,15 +180,15 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/add-user`, {
+      const response = await fetch(`${API_BASE_URL}/api/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
         body: JSON.stringify({
-          name: signupData.name,
-          email: signupData.email,
+          name: signupData.name.trim(),
+          email: signupData.email.trim(),
           password: signupData.password,
           password_confirmation: signupData.password_confirmation
         })
@@ -202,7 +202,8 @@ const Login = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
+        const firstError = data.errors ? Object.values(data.errors).flat()[0] : null;
+        throw new Error(firstError || data.message || 'Registration failed');
       }
 
       showNotification('Account created successfully!', 'success');
@@ -210,7 +211,7 @@ const Login = () => {
         setIsSignUp(false);
         setFormData({
           ...formData,
-          email: signupData.email
+          email: signupData.email.trim()
         });
       }, 1500);
     } catch (err) {
