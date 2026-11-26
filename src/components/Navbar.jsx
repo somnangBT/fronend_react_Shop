@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../CartContext';
 import { useAuth } from '../AuthContext';
-import { KhmerFrieze, KhmerNewYearBanner } from './KhmerOrnament';
+import { KhmerFrieze } from './KhmerOrnament';
 import { API_BASE_URL } from '../config/api';
 import './styles/Navbar.css';
 
@@ -85,7 +85,6 @@ const Navbar = () => {
 
   return (
     <header className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
-      <KhmerNewYearBanner />
       <div className="nav-grid-overlay"></div>
       <div className="nav-glow-orb nav-glow-1"></div>
       <div className="nav-container">

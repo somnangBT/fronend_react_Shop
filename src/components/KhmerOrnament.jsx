@@ -267,24 +267,6 @@ export const KhmerStarLantern = ({ size = 42, className = '' }) => {
   );
 };
 
-/**
- * KhmerNewYearBanner: Top festive announcement bar
- */
-export const KhmerNewYearBanner = () => {
-  return (
-    <div className="kny-top-banner">
-      <div className="kny-banner-content">
-        <span className="kny-banner-icon">🏮</span>
-        <span className="kny-banner-pill">🇰🇭 សួស្តីឆ្នាំថ្មី!</span>
-        <span className="kny-banner-text">
-          អបអរសាទរពិធីបុណ្យចូលឆ្នាំថ្មីប្រពៃណីជាតិខ្មែរ • បញ្ចុះតម្លៃពិសេស <strong>10% - 20%</strong> លើមុខម្ហូប & នំប្រពៃណីខ្មែរទាំងអស់! (កូដ: <strong>KHMER10</strong>)
-        </span>
-        <span className="kny-banner-icon">🏮</span>
-      </div>
-    </div>
-  );
-};
-
 
 /**
  * KhmerPhkaChan: Traditional 8-Petal Celestial Flower Rosette (ក្បាច់ផ្កាចន្ទន៍មាស)
