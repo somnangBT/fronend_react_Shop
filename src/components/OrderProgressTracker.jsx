@@ -43,7 +43,7 @@ const OrderProgressTracker = ({ status = 'pending', paymentStatus = 'pending', c
     stage1State === 'done'
       ? '✅ Admin បានអនុម័ត'
       : isPreparing
-      ? '🍳 អនុម័ត • កំពុងរៀបចំ'
+      ? '📦 អនុម័ត • កំពុងវេចខ្ចប់'
       : isPaid
       ? '💳 បង់រួច • ចាំ Admin'
       : isAwaiting

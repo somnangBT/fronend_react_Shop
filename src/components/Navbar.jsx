@@ -132,26 +132,10 @@ const Navbar = () => {
             </li>
             <li className="nav-item">
               <Link
-                to="/products?category=fresh"
-                className="nav-link nav-link-special nav-link-fresh"
-              >
-                🌿 អាហារស្រស់
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link
-                to="/products?category=cooked"
-                className="nav-link nav-link-special nav-link-cooked"
-              >
-                🍳 អាហារចំអិន
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link
                 to="/products"
-                className={`nav-link ${location.pathname === '/products' && !location.search ? 'active' : ''}`}
+                className={`nav-link ${location.pathname === '/products' ? 'active' : ''}`}
               >
-                មុខទំនិញ
+                🛍️ មុខទំនិញទាំងអស់
               </Link>
             </li>
             {/* Mobile Drawer Only Order History */}
@@ -164,12 +148,12 @@ const Navbar = () => {
               </Link>
             </li>
             <li className="nav-item">
-              <Link to="/about" className="nav-link">
+              <Link to="/about" className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}>
                 អំពីយើង
               </Link>
             </li>
             <li className="nav-item">
-              <Link to="/contact" className="nav-link">
+              <Link to="/contact" className={`nav-link ${location.pathname === '/contact' ? 'active' : ''}`}>
                 ទំនាក់ទំនង
               </Link>
             </li>
@@ -182,7 +166,7 @@ const Navbar = () => {
           <div className={`search-container ${isSearchOpen ? 'search-active' : ''}`}>
             <input
               type="text"
-              placeholder="ស្វែងរកម្ហូប..."
+              placeholder="ស្វែងរកទំនិញ..."
               className="search-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

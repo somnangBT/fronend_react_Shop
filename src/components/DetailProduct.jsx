@@ -155,8 +155,6 @@ const DetailProduct = () => {
   const productImages = [mainImgUrl, mainImgUrl, mainImgUrl];
 
   const catName = product.category?.cat_name || 'ទូទៅ';
-  const isFresh = catName.includes('ស្រស់') || catName.toLowerCase().includes('fresh');
-  const isCooked = catName.includes('ចំអិន') || catName.toLowerCase().includes('cooked');
 
   const finalPrice = parseFloat(product.discount) > 0
     ? calculateDiscountedPrice(product.price, product.discount)
@@ -239,7 +237,7 @@ const DetailProduct = () => {
             <div className="detail-header">
               <div className="detail-category" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
                 <KhmerAngkorCrest size={16} />
-                <span>{isFresh ? '🌿 អាហារស្រស់ៗ' : isCooked ? '🍳 អាហារចំអិនផ្ទាល់' : catName}</span>
+                <span>{catName}</span>
               </div>
               <h1 className="detail-title">{product.pro_name}</h1>
 
@@ -247,7 +245,7 @@ const DetailProduct = () => {
                 <div className="detail-id">កូដទំនិញ: #{product.pro_id}</div>
                 <div className="detail-stock">
                   {product.qty > 0 ? (
-                    <span className="in-stock">✓ មានក្នុងស្តុក ({product.qty} ចំណែក)</span>
+                    <span className="in-stock">✓ មានក្នុងស្តុក ({product.qty})</span>
                   ) : (
                     <span className="out-of-stock">អស់ពីស្តុក</span>
                   )}
@@ -283,36 +281,36 @@ const DetailProduct = () => {
               <h3 className="description-title">ការពិពណ៌នាអំពីមុខទំនិញ</h3>
               <p className="description-text">
                 {product.description ||
-                  'មុខម្ហូបឆ្ងាញ់ប្រចាំហាង DeliciousEats ចម្អិនឡើងពីគ្រឿងផ្សំស្រស់ធម្មជាតិ ១០០% មានអនាម័យខ្ពស់ រសជាតិខ្មែរពិតៗ និងដឹកជញ្ជូនរហ័សទាន់ចិត្តដល់គេហដ្ឋាន។'}
+                  'ទំនិញគុណភាពខ្ពស់ប្រចាំហាង LuckShop ធានាភាពពិតប្រាកដ តម្លៃសមរម្យ ទូទាត់ងាយស្រួលតាម KHQR និងដឹកជញ្ជូនរហ័សទាន់ចិត្ត។'}
               </p>
             </div>
 
             <div className="detail-features">
-              <h3 className="features-title">គុណសម្បត្តិពិសេស & ស្តង់ដារ</h3>
+              <h3 className="features-title">គុណសម្បត្តិពិសេស &amp; សេវាកម្ម</h3>
               <ul className="features-list">
                 <li className="feature-item">
                   <svg xmlns="http://www.w3.org/2000/svg" className="feature-icon" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  គ្រឿងផ្សំស្រស់ធម្មជាតិ ១០០%
+                  ទំនិញគុណភាពល្អ ១០០%
                 </li>
                 <li className="feature-item">
                   <svg xmlns="http://www.w3.org/2000/svg" className="feature-icon" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  រសជាតិខ្មែរដើម អនាម័យខ្ពស់
+                  ទូទាត់ងាយស្រួលតាម Bakong / ABA KHQR
                 </li>
                 <li className="feature-item">
                   <svg xmlns="http://www.w3.org/2000/svg" className="feature-icon" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  ដឹកជញ្ជូនរហ័ស (១៥-៣០ នាទី)
+                  ដឹកជញ្ជូនរហ័សទាន់ចិត្តដល់ទីតាំង
                 </li>
                 <li className="feature-item">
                   <svg xmlns="http://www.w3.org/2000/svg" className="feature-icon" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  អាចបញ្ជាក់កម្រិតហិរ/ផ្អែមតាមចំណូលចិត្ត
+                  តាមដានស្ថានភាពដឹកជញ្ជូនផ្ទាល់ ៣ ដំណាក់កាល
                 </li>
               </ul>
             </div>
@@ -356,7 +354,7 @@ const DetailProduct = () => {
 
         {relatedProducts.length > 0 && (
           <div className="related-products">
-            <h2 className="related-title">មុខម្ហូប & អាហារស្រស់ៗដែលពាក់ព័ន្ធ</h2>
+            <h2 className="related-title">ទំនិញផ្សេងទៀតដែលពាក់ព័ន្ធ</h2>
             <KhmerDivider />
             <div className="related-grid">
               {relatedProducts.map((relatedProduct) => (

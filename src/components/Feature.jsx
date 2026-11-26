@@ -13,14 +13,14 @@ const Features = () => {
             <div className="features-subtitle-wrapper" style={{ width: '100%', display: 'flex', justifyContent: 'center', margin: '0.8rem 0' }}>
               <span className="features-subtitle" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
                 <KhmerAngkorCrest size={18} />
-                <span>ហេតុអ្វីជ្រើសរើស DeliciousEats?</span>
+                <span>ហេតុអ្វីជ្រើសរើស LuckShop?</span>
               </span>
             </div>
-            <h2 className="features-title">បទពិសោធន៍ម្ហូបឆ្ងាញ់ & អាហារស្រស់ៗកម្រិតខ្ពស់</h2>
+            <h2 className="features-title">ទំនិញគ្រប់មុខ គុណភាពខ្ពស់ &amp; សេវាកម្មទំនើប</h2>
             <KhmerDivider />
           </div>
           <p className="features-description">
-            យើងប្តេជ្ញាផ្តល់ជូននូវអាហារស្រស់ៗធម្មជាតិ ១០០% និងមុខម្ហូបចំអិនផ្ទាល់ក្តៅៗប្រកបដោយអនាម័យខ្ពស់ រសជាតិខ្មែរពិតៗ ដឹកជញ្ជូនរហ័សដល់គេហដ្ឋាន។
+            យើងប្តេជ្ញាផ្តល់ជូននូវទំនិញគ្រប់ប្រភេទដែលមានគុណភាពល្អ តម្លៃសមរម្យ ទូទាត់ងាយស្រួលតាម Bakong / ABA KHQR និងដឹកជញ្ជូនរហ័សដល់ទីតាំង។
           </p>
         </div>
         
@@ -34,7 +34,7 @@ const Features = () => {
             </div>
             <h3 className="feature-title">ដឹកជញ្ជូនរហ័សទាន់ចិត្ត</h3>
             <p className="feature-text">
-              ការកុម្ម៉ង់របស់អ្នកនឹងទៅដល់មាត់ទ្វារក្នុងរយៈពេល ១៥-៣០ នាទី ធានានូវភាពក្តៅស្រស់ និងឆ្ងាញ់ជានិច្ច។
+              ការកុម្ម៉ង់របស់អ្នកនឹងត្រូវវេចខ្ចប់យ៉ាងស្អាត និងដឹកជញ្ជូនទៅដល់ដៃអ្នកយ៉ាងឆាប់រហ័ស ជាមួយការតាមដានស្ថានភាពផ្ទាល់ ៣ ដំណាក់កាល។
             </p>
           </div>
           
@@ -45,9 +45,9 @@ const Features = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
             </div>
-            <h3 className="feature-title">គ្រឿងផ្សំស្រស់ធម្មជាតិ ១០០%</h3>
+            <h3 className="feature-title">ទំនិញគុណភាពពិត ១០០%</h3>
             <p className="feature-text">
-              យើងជ្រើសរើសតែបន្លែ សាច់ និងគ្រឿងផ្សំស្រស់ៗបំផុតពីកសិដ្ឋាន និងអ្នកផ្គត់ផ្គង់ក្នុងស្រុកដែលគួរឱ្យទុកចិត្ត។
+              គ្រប់មុខទំនិញទាំងអស់ត្រូវបានត្រួតពិនិត្យគុណភាពយ៉ាងល្អិតល្អន់មុនពេលដាក់លក់ និងវេចខ្ចប់ជូនអតិថិជន។
             </p>
           </div>
           
@@ -58,9 +58,9 @@ const Features = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
               </svg>
             </div>
-            <h3 className="feature-title">ប្រូម៉ូសិន & តម្លៃសមរម្យ</h3>
+            <h3 className="feature-title">ប្រូម៉ូសិន &amp; តម្លៃសមរម្យ</h3>
             <p className="feature-text">
-              រីករាយជាមួយការបញ្ចុះតម្លៃពិសេសប្រចាំសប្តាហ៍ ឈុតមុខម្ហូបពិសេសៗ និងពិន្ទុរង្វាន់សម្រាប់អតិថិជនស្មោះត្រង់។
+              រីករាយជាមួយការបញ្ចុះតម្លៃពិសេសប្រចាំសប្តាហ៍ ទំនិញពេញនិយមជាច្រើនប្រភេទ និងតម្លៃសមរម្យបំផុត។
             </p>
           </div>
           
@@ -71,9 +71,9 @@ const Features = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
               </svg>
             </div>
-            <h3 className="feature-title">អាចបញ្ជាក់រសជាតិបាន</h3>
+            <h3 className="feature-title">ទំនិញចម្រុះគ្រប់ប្រភេទ</h3>
             <p className="feature-text">
-              អ្នកអាចកំណត់កម្រិតហិរ ផ្អែម ប្រៃ ឬគ្រឿងផ្សំតាមចំណង់ចំណូលចិត្តរបស់អ្នកបានយ៉ាងងាយស្រួល។
+              មានលក់ទំនិញគ្រប់មុខច្រើនប្រភេទ ងាយស្រួលស្វែងរក និងបញ្ជាទិញក្នុងកន្លែងតែមួយ។
             </p>
           </div>
           
@@ -106,17 +106,17 @@ const Features = () => {
         
         <div className="features-highlight">
           <div className="highlight-content">
-            <h3 className="highlight-title">សាកល្បងមុខម្ហូបប្រចាំរដូវកាល</h3>
+            <h3 className="highlight-title">ទិញទំនិញគ្រប់មុខងាយៗ &amp; ទូទាត់ KHQR</h3>
             <p className="highlight-text">
-              ការផ្តល់ជូនពិសេសក្នុងរយៈពេលកំណត់ ជាមួយមុខម្ហូបផ្សំឡើងពីគ្រឿងស្រស់ៗប្រចាំខែ។ កុំរំលងស្នាដៃចុងភៅពិសេសរបស់យើង!
+              ជ្រើសរើសទំនិញគ្រប់ប្រភេទជាមួយប្រូម៉ូសិនពិសេសប្រចាំសប្ដាហ៍ និងទូទាត់សុវត្ថិភាពតាម Bakong KHQR ឬ ABA KHQR!
             </p>
-            <Link to="/products?category=cooked" className="highlight-button">
-              មើលមុខម្ហូបពិសេស ➔
+            <Link to="/products" className="highlight-button">
+              មើលមុខទំនិញទាំងអស់ ➔
             </Link>
           </div>
           <div className="highlight-image">
             <div className="highlight-circle">
-              <img className="rounded-full" src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&auto=format&fit=crop&q=80" alt="ម្ហូបពិសេស" />
+              <img className="rounded-full" src="/logo512.png" alt="LuckShop" />
             </div>
             <div className="highlight-badge">ប្រូម៉ូសិនពិសេស</div>
           </div>
@@ -129,7 +129,7 @@ const Features = () => {
             </svg>
           </div>
           <p className="testimonial-text">
-            «គុណភាពម្ហូប និងភាពស្រស់នៃគ្រឿងផ្សំពិតជាល្អឥតខ្ចោះ ដឹកជញ្ជូនលឿនទាន់ចិត្តណាស់! ម្ហូបចំអិនក្តៅៗឈ្ងុយឆ្ងាញ់ដូចស្នាដៃម្តាយធ្វើនៅផ្ទះពិតៗ។ ខ្ញុំក្លាយជាម៉ូយប្រចាំរបស់ DeliciousEats ហើយ!»
+            «ទំនិញមានគុណភាពល្អដូចរូបភាព តម្លៃសមរម្យ ហើយបង់ប្រាក់តាម KHQR លឿនទាន់ចិត្ត! អាចតាមដានស្ថានភាពដឹកជញ្ជូនផ្ទាល់បានយ៉ាងស្រួល!»
           </p>
           <div className="testimonial-author">
             <div className="author-avatar">

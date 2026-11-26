@@ -33,7 +33,7 @@ const Footer = () => {
               <span>Delicious<span>Eats</span></span>
             </h2>
             <p className="footer-tagline">
-              ហាងម្ហូបខ្មែរឆ្ងាញ់ៗ & អាហារស្រស់ៗធម្មជាតិ ១០០% រសជាតិខ្មែរពិតៗ អនាម័យខ្ពស់ ដឹកជញ្ជូនរហ័សដល់គេហដ្ឋាន។
+              ហាងលក់ទំនិញគ្រប់មុខអនឡាញ គុណភាពខ្ពស់ តម្លៃសមរម្យ ទូទាត់ងាយស្រួលតាម Bakong / ABA KHQR និងដឹកជញ្ជូនរហ័សដល់ទីតាំង។
             </p>
             <div className="footer-contact-brief" style={{ marginTop: '0.8rem', fontSize: '0.9rem', color: '#b2bec3', lineHeight: '1.6' }}>
               <div>📍 រាជធានីភ្នំពេញ, ព្រះរាជាណាចក្រកម្ពុជា</div>
@@ -71,20 +71,20 @@ const Footer = () => {
             <div className="footer-links-column">
               <h3 className="footer-links-title">មុខទំនិញ</h3>
               <ul className="footer-links-list">
-                <li><Link to="/products?category=fresh" className="footer-link">🌿 អាហារស្រស់ៗ</Link></li>
-                <li><Link to="/products?category=cooked" className="footer-link">🍳 អាហារចំអិនផ្ទាល់</Link></li>
                 <li><Link to="/products" className="footer-link">📦 មុខទំនិញទាំងអស់</Link></li>
-                <li><Link to="/#products" className="footer-link">🔥 មុខម្ហូបលក់ដាច់</Link></li>
+                <li><Link to="/#products" className="footer-link">🔥 ទំនិញលក់ដាច់</Link></li>
+                <li><Link to="/#features" className="footer-link">⭐ គុណភាព & សេវាកម្ម</Link></li>
+                <li><Link to="/cart" className="footer-link">🛒 កន្ត្រកទំនិញ</Link></li>
               </ul>
             </div>
             
             <div className="footer-links-column">
               <h3 className="footer-links-title">អំពីយើង</h3>
               <ul className="footer-links-list">
-                <li><Link to="/about" className="footer-link">អំពី DeliciousEats</Link></li>
+                <li><Link to="/about" className="footer-link">អំពីហាងយើង</Link></li>
                 <li><Link to="/#features" className="footer-link">ហេតុអ្វីជ្រើសរើសយើង</Link></li>
                 <li><Link to="/contact" className="footer-link">ទំនាក់ទំនងយើង</Link></li>
-                <li><Link to="/about" className="footer-link">ស្តង់ដារអនាម័យ</Link></li>
+                <li><Link to="/about" className="footer-link">ស្តង់ដារគុណភាព</Link></li>
               </ul>
             </div>
             
@@ -112,7 +112,7 @@ const Footer = () => {
         
         <div className="footer-newsletter">
           <h3 className="newsletter-title">ទទួលព័ត៌មានប្រូម៉ូសិនពិសេស</h3>
-          <p className="newsletter-text">ចុះឈ្មោះអ៊ីមែលរបស់អ្នកដើម្បីទទួលបានប័ណ្ណបញ្ចុះតម្លៃ និងមុខម្ហូបថ្មីៗប្រចាំសប្តាហ៍មុនគេ។</p>
+          <p className="newsletter-text">ចុះឈ្មោះអ៊ីមែលរបស់អ្នកដើម្បីទទួលបានប័ណ្ណបញ្ចុះតម្លៃ និងទំនិញថ្មីៗប្រចាំសប្តាហ៍មុនគេ។</p>
           <form className="newsletter-form" onSubmit={handleSubscribe}>
             <div className="form-input-wrapper">
               <input 
@@ -142,12 +142,12 @@ const Footer = () => {
         
         <div className="footer-bottom">
           <div className="footer-copyright">
-            <p className="copyright-text">&copy; {new Date().getFullYear()} DeliciousEats. រក្សាសិទ្ធិគ្រប់យ៉ាង។ រសជាតិខ្មែរពិតៗ គុណភាពខ្ពស់។</p>
+            <p className="copyright-text">&copy; {new Date().getFullYear()} LuckShop • DeliciousEats. រក្សាសិទ្ធិគ្រប់យ៉ាង។ គុណភាពខ្ពស់ ទំនុកចិត្តខ្ពស់។</p>
           </div>
           <div className="footer-badges">
-            <span className="footer-badge">🌿 ធម្មជាតិ ១០០%</span>
+            <span className="footer-badge">🌟 គុណភាព ១០០%</span>
             <span className="footer-badge">⚡ ដឹកជញ្ជូនរហ័ស</span>
-            <span className="footer-badge">🛡️ អនាម័យខ្ពស់</span>
+            <span className="footer-badge">🛡️ សុវត្ថិភាពខ្ពស់</span>
           </div>
           <div className="scroll-to-top" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})} title="ត្រឡប់ឡើងលើ">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="scroll-icon">

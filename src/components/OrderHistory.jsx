@@ -167,7 +167,7 @@ const OrderHistory = () => {
       case 'pending':
         return { label: '⏳ កំពុងរង់ចាំ (Pending)', cls: 'status-pending' };
       case 'preparing':
-        return { label: '🍳 កំពុងចម្អិន (Preparing)', cls: 'status-processing' };
+        return { label: '📦 កំពុងវេចខ្ចប់ (Packing)', cls: 'status-processing' };
       case 'delivering':
         return { label: '🛵 កំពុងដឹកជញ្ជូន (Delivering)', cls: 'status-processing' };
       case 'completed':
@@ -187,10 +187,10 @@ const OrderHistory = () => {
 
       <div className="order-history-container">
         <div className="order-history-header">
-          <div className="order-history-badge">🛍️ ប្រវត្តិការទិញទំនិញ & ម្ហូបអាហារ</div>
+          <div className="order-history-badge">🛍️ ប្រវត្តិការទិញទំនិញ &amp; សំណើបញ្ជាទិញ</div>
           <h1 className="order-history-title">ប្រវត្តិការបញ្ជាទិញ (Your Orders)</h1>
           <p className="order-history-subtitle">
-            តាមដាន ពិនិត្យមើល និងគ្រប់គ្រងរាល់ការកុម្ម៉ង់ទិញទំនិញរបស់អ្នកនៅ DeliciousEats
+            តាមដាន ពិនិត្យស្ថានភាពបង់ប្រាក់ និងដំណើរការដឹកជញ្ជូនទំនិញរបស់អ្នកនៅ LuckShop
           </p>
         </div>
 
@@ -216,12 +216,12 @@ const OrderHistory = () => {
               </svg>
             </div>
             <h2>មិនទាន់មានការបញ្ជាទិញនៅឡើយទេ</h2>
-            <p>អ្នកមិនទាន់បានធ្វើការកុម្ម៉ង់ទិញអ្វីនៅឡើយទេ។ សូមចាប់ផ្តើមជ្រើសរើសអាហារស្រស់ៗ និងមុខម្ហូបឆ្ងាញ់ៗឥឡូវនេះ!</p>
+            <p>អ្នកមិនទាន់បានធ្វើការកុម្ម៉ង់ទិញទំនិញអ្វីនៅឡើយទេ។ សូមចាប់ផ្តើមជ្រើសរើសទំនិញដែលអ្នកត្រូវការឥឡូវនេះ!</p>
             <button
               className="start-shopping-btn"
               onClick={() => navigate('/products')}
             >
-              <span>ទៅកាន់បញ្ជីមុខម្ហូប (Start Shopping)</span>
+              <span>ទៅកាន់បញ្ជីមុខទំនិញ (Start Shopping)</span>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
               </svg>

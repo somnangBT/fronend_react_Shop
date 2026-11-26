@@ -104,7 +104,7 @@ const Cart = () => {
             <KhmerAngkorCrest size={20} />
             <span>កន្ត្រកទំនិញរបស់អ្នក</span>
           </div>
-          <h1 className="cart-title">បញ្ជីមុខម្ហូប & អាហារដែលបានជ្រើសរើស</h1>
+          <h1 className="cart-title">បញ្ជីមុខទំនិញដែលបានជ្រើសរើស</h1>
           <KhmerDivider />
           <p className="cart-subtitle">
             {cartCount > 0
@@ -275,9 +275,9 @@ const Cart = () => {
               </svg>
             </div>
             <h2>កន្ត្រកទំនិញរបស់អ្នកនៅទទេ</h2>
-            <p>អ្នកមិនទាន់បានបន្ថែមមុខម្ហូប ឬអាហារស្រស់ៗទៅក្នុងកន្ត្រកនៅឡើយទេ។</p>
+            <p>អ្នកមិនទាន់បានបន្ថែមមុខទំនិញទៅក្នុងកន្ត្រកនៅឡើយទេ។</p>
             <Link to="/products" className="continue-shopping-btn">
-              <span>ទស្សនាមុខម្ហូបដើម្បីកុម្ម៉ង់ ➔</span>
+              <span>ទស្សនាមុខទំនិញដើម្បីបញ្ជាទិញ ➔</span>
             </Link>
           </div>
         )}
@@ -287,7 +287,7 @@ const Cart = () => {
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
             </svg>
-            <span>បន្តជ្រើសរើសមុខម្ហូបបន្ថែម</span>
+            <span>បន្តជ្រើសរើសមុខទំនិញបន្ថែម</span>
           </Link>
         </div>
       </div>

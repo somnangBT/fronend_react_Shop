@@ -60,49 +60,56 @@ const Hero = () => {
           <div className="hero-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
             <KhmerTevada size={24} />
             <KhmerPhkaChan size={16} />
-            <span>🏮 អបអរសាទរពិធីបុណ្យចូលឆ្នាំថ្មីប្រពៃណីជាតិខ្មែរ • សួស្តីឆ្នាំថ្មី 🇰🇭</span>
+            <span>🛍️ ហាងលក់ទំនិញគ្រប់មុខតាមអនឡាញកម្ពុជា • គុណភាព &amp; តម្លៃសមរម្យ 🇰🇭</span>
             <KhmerPhkaChan size={16} />
           </div>
           <h1 className="hero-title">
-            Delicious<span className="hero-title-highlight">Eats</span>
-            <span className="hero-title-accent">ម្ហូបខ្មែរចូលឆ្នាំថ្មី នំប្រពៃណី & អាហារស្រស់ធម្មជាតិ</span>
+            Luck<span className="hero-title-highlight">Shop</span>
+            <span className="hero-title-accent">ទំនិញគ្រប់មុខ គុណភាពខ្ពស់ • ទូទាត់ KHQR &amp; ដឹកជញ្ជូនរហ័ស</span>
           </h1>
           <p className="hero-description">
-            {heroData?.description || 'អបអរសាទរពិធីបុណ្យចូលឆ្នាំថ្មីប្រពៃណីជាតិខ្មែរ! រីករាយជាមួយមុខម្ហូបប្រពៃណីឈ្ងុយឆ្ងាញ់ នំអន្សមជ្រូក-ចេក ការីសាច់មាន់ ខសាច់ជ្រូកពងទា និងគ្រឿងផ្សំស្រស់ធម្មជាតិ ១០០% សម្រាប់សែនទេវតា និងជួបជុំក្រុមគ្រួសារ ដឹកជញ្ជូនរហ័សទាន់ចិត្តដល់គេហដ្ឋាន!'}
+            {heroData?.description || 'សូមស្វាគមន៍មកកាន់ LuckShop (DeliciousEats)! ទីផ្សារលក់ទំនិញគ្រប់ប្រភេទតាមអនឡាញ ងាយស្រួលជ្រើសរើស តម្លៃសមរម្យ ទូទាត់ងាយស្រួលតាម Bakong KHQR ឬ ABA KHQR ជាមួយការតាមដានដឹកជញ្ជូនច្បាស់លាស់ ៣ ដំណាក់កាល!'}
           </p>
 
           <KhmerDivider />
 
-          {/* Quick Category CTAs */}
+          {/* Quick Shop CTAs */}
           <div className="hero-cta-group">
             <button
-              onClick={() => handleCategoryJump('អាហារស្រស់ៗ')}
+              onClick={() => {
+                const productsElem = document.getElementById('products');
+                if (productsElem) {
+                  productsElem.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                  navigate('/products');
+                }
+              }}
               className="hero-cta-primary hero-btn-fresh"
             >
-              <span className="cta-icon">🥗</span>
-              <span className="cta-text">អាហារស្រស់ៗ (Fresh Food)</span>
+              <span className="cta-icon">🛍️</span>
+              <span className="cta-text">ទស្សនាទំនិញទាំងអស់</span>
               <span className="cta-pulse"></span>
             </button>
             <button
-              onClick={() => handleCategoryJump('អាហារចំអិនផ្ទាល់')}
+              onClick={() => navigate('/products')}
               className="hero-cta-secondary hero-btn-cooked"
             >
-              <span className="cta-icon">🍳</span>
-              <span className="cta-text">អាហារចំអិនផ្ទាល់ (Cooked Fresh)</span>
+              <span className="cta-icon">📦</span>
+              <span className="cta-text">ប្រភេទទំនិញគ្រប់មុខ</span>
             </button>
             <button
-              onClick={() => handleCategoryJump('ចូលឆ្នាំ')}
+              onClick={() => navigate('/account/orders')}
               className="hero-cta-kny"
               style={{
-                background: 'linear-gradient(135deg, #f59e0b 0%, #dc2626 100%)',
+                background: 'linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%)',
                 color: '#fff',
-                border: '1px solid rgba(254, 240, 138, 0.6)',
+                border: '1px solid rgba(125, 211, 252, 0.55)',
                 fontWeight: 700,
-                boxShadow: '0 4px 15px rgba(220, 38, 38, 0.4)'
+                boxShadow: '0 4px 15px rgba(14, 165, 233, 0.35)'
               }}
             >
-              <span className="cta-icon">🏮</span>
-              <span className="cta-text">ម្ហូបចូលឆ្នាំថ្មី</span>
+              <span className="cta-icon">🛵</span>
+              <span className="cta-text">តាមដានការបញ្ជាទិញ</span>
             </button>
           </div>
 
@@ -143,7 +150,7 @@ const Hero = () => {
                   />
                 </svg>
               </div>
-              <span>ស្រស់ធម្មជាតិ ១០០%</span>
+              <span>គុណភាពល្អ ១០០%</span>
             </div>
             <div className="hero-feature-item">
               <div className="feature-icon-container">
@@ -162,7 +169,7 @@ const Hero = () => {
                   />
                 </svg>
               </div>
-              <span>អនាម័យ & សុវត្ថិភាព</span>
+              <span>ទូទាត់ KHQR &amp; សុវត្ថិភាព</span>
             </div>
           </div>
         </div>
@@ -173,8 +180,8 @@ const Hero = () => {
             <div className="hero-product-item hero-product-main">
               <KhmerCorner position="top-left" />
               <KhmerCorner position="bottom-right" />
-              <div className="hero-product-badge" style={{ background: 'linear-gradient(135deg, #f59e0b, #ef4444)' }}>
-                🏮 ម្ហូបពិសេសចូលឆ្នាំថ្មី
+              <div className="hero-product-badge" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
+                🌟 ទំនិញពេញនិយមប្រចាំហាង
               </div>
               <div className="hero-product-image-wrapper">
                 <div className="hero-product-glow"></div>
@@ -183,78 +190,78 @@ const Hero = () => {
                     src={
                       heroData?.image1
                         ? (heroData.image1.startsWith('http') ? heroData.image1 : `${baseUrl}${heroData.image1}`)
-                        : 'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&auto=format&fit=crop&q=80'
+                        : '/logo512.png'
                     }
-                    alt="Main dish"
+                    alt="LuckShop Featured"
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = 'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&auto=format&fit=crop&q=80';
+                      e.target.src = '/logo512.png';
                     }}
                   />
                 </div>
               </div>
               <div className="hero-product-info">
-                <h3 className="hero-product-name">ឡុកឡាក់សាច់គោ & អាម៉ុកត្រីបែបខ្មែរ</h3>
-                <span className="hero-product-subtag">🍳 ចម្អិនផ្ទាល់ក្តៅៗភ្លាមៗ</span>
+                <h3 className="hero-product-name">ទំនិញគុណភាពល្អ &amp; តម្លៃសមរម្យ</h3>
+                <span className="hero-product-subtag">🛍️ លក់គ្រប់មុខ • ដឹកជញ្ជូនទូទាំងប្រទេស</span>
               </div>
             </div>
 
-            {/* Fresh Food Showcase Card */}
+            {/* Secondary Showcase Card 1 */}
             <div
               className="hero-product-item hero-product-secondary hero-product-2"
-              onClick={() => handleCategoryJump('អាហារស្រស់ៗ')}
+              onClick={() => handleCategoryJump('all')}
               style={{ cursor: 'pointer' }}
-              title="ចុចដើម្បីមើល អាហារស្រស់ៗ"
+              title="ចុចដើម្បីមើលមុខទំនិញទាំងអស់"
             >
-              <div className="hero-subcard-badge fresh">🥗 អាហារស្រស់ៗ</div>
+              <div className="hero-subcard-badge fresh">🛍️ ទំនិញចម្រុះ</div>
               <div className="hero-product-image-wrapper">
                 <div className="hero-product-glow small"></div>
                 <img
                   src={
                     heroData?.image2
                       ? (heroData.image2.startsWith('http') ? heroData.image2 : `${baseUrl}${heroData.image2}`)
-                      : 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=800&auto=format&fit=crop&q=80'
+                      : '/logo512.png'
                   }
-                  alt="Fresh Salmon"
+                  alt="LuckShop Products"
                   onError={(e) => {
                     e.target.onerror = null;
-                    e.target.src = 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=800&auto=format&fit=crop&q=80';
+                    e.target.src = '/logo512.png';
                   }}
                 />
               </div>
-              <div className="hero-subcard-label">ត្រីសាល់ម៉ុន & សាច់ស្រស់សែនទេវតា</div>
+              <div className="hero-subcard-label">ជ្រើសរើសទំនិញគ្រប់ប្រភេទ</div>
             </div>
 
-            {/* Cooked Food Showcase Card */}
+            {/* Secondary Showcase Card 2 */}
             <div
               className="hero-product-item hero-product-secondary hero-product-3"
-              onClick={() => handleCategoryJump('អាហារចំអិនផ្ទាល់')}
+              onClick={() => navigate('/checkout')}
               style={{ cursor: 'pointer' }}
-              title="ចុចដើម្បីមើល អាហារចំអិនផ្ទាល់"
+              title="ទូទាត់ងាយស្រួលតាម KHQR"
             >
-              <div className="hero-subcard-badge cooked">🍳 ចម្អិនក្តៅៗ</div>
+              <div className="hero-subcard-badge cooked">⚡ KHQR Pay</div>
               <div className="hero-product-image-wrapper">
                 <div className="hero-product-glow small"></div>
                 <img
                   src={
                     heroData?.image3
                       ? (heroData.image3.startsWith('http') ? heroData.image3 : `${baseUrl}${heroData.image3}`)
-                      : 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=800&auto=format&fit=crop&q=80'
+                      : '/logo512.png'
                   }
-                  alt="Cooked Fresh Seafood Rice"
+                  alt="KHQR Fast Payment"
                   onError={(e) => {
                     e.target.onerror = null;
-                    e.target.src = 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=800&auto=format&fit=crop&q=80';
+                    e.target.src = '/logo512.png';
                   }}
                 />
               </div>
-              <div className="hero-subcard-label">នំអន្សមជ្រូក-ចេក & ម្ហូបក្តៅៗ</div>
+              <div className="hero-subcard-label">Bakong &amp; ABA KHQR</div>
             </div>
 
             {/* Floating Icons */}
             <div className="hero-product-floating-elements">
-              <div className="hero-floating-element hero-float-1">🏮</div>
-              <div className="hero-floating-element hero-float-2">🌸</div>
+              <div className="hero-floating-element hero-float-1">🛍️</div>
+              <div className="hero-floating-element hero-float-2">📦</div>
               <div className="hero-floating-element hero-float-3">✨</div>
             </div>
           </div>
@@ -262,7 +269,7 @@ const Hero = () => {
           <div className="hero-stats">
             <div className="hero-stat-item">
               <span className="hero-stat-number">១០០%</span>
-              <span className="hero-stat-label">ស្រស់ធម្មជាតិ</span>
+              <span className="hero-stat-label">គុណភាពពិត</span>
             </div>
             <div className="hero-stat-item">
               <span className="hero-stat-number">១៥-២៥ នាទី</span>

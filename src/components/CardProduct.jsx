@@ -66,19 +66,12 @@ const CardProduct = () => {
     fetchProducts();
   }, [fetchCategories, fetchProducts]);
 
-  // Handle URL query parameters (?category=fresh or ?category=cooked or ?q=search)
+  // Handle URL query parameters (?category=...)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const catParam = params.get("category");
     if (catParam) {
-      const lower = catParam.toLowerCase();
-      if (lower.includes("fresh") || lower.includes("ស្រស់")) {
-        setActiveCategory("អាហារស្រស់ៗ (Fresh Food)");
-      } else if (lower.includes("cooked") || lower.includes("ចំអិន")) {
-        setActiveCategory("អាហារចំអិនផ្ទាល់ (Cooked Fresh)");
-      } else {
-        setActiveCategory(catParam);
-      }
+      setActiveCategory(catParam);
     }
   }, [location.search]);
 
@@ -87,15 +80,15 @@ const CardProduct = () => {
     const handleCustomFilter = (e) => {
       const keyword = e.detail;
       if (!keyword) return;
+      if (keyword === "all") {
+        setActiveCategory("all");
+        return;
+      }
 
       const target = categories.find((c) =>
         c.toLowerCase().includes(keyword.toLowerCase())
       );
-      if (target) {
-        setActiveCategory(target);
-      } else {
-        setActiveCategory(keyword);
-      }
+      setActiveCategory(target || keyword);
     };
 
     window.addEventListener("filter-category", handleCustomFilter);
@@ -183,27 +176,14 @@ const CardProduct = () => {
 
   const getCategoryLabel = (cat) => {
     if (cat === "all") return "✨ ទាំងអស់ (All)";
-    if (cat.includes("ស្រស់") || cat.toLowerCase().includes("fresh food")) {
-      return "🌿 អាហារស្រស់ៗ (Fresh Food)";
-    }
-    if (cat.includes("ចំអិន") || cat.toLowerCase().includes("cooked")) {
-      return "🍳 អាហារចំអិនផ្ទាល់ (Cooked Fresh)";
-    }
-    if (cat.includes("ភេសជ្ជៈ") || cat.toLowerCase().includes("drink")) {
-      return "🥤 ភេសជ្ជៈ & បង្អែម (Drinks)";
-    }
     return cat;
-  };
-
-  const isCategorySelected = (keyword) => {
-    return activeCategory.toLowerCase().includes(keyword.toLowerCase());
   };
 
   if (loading) {
     return (
       <div className="product-loading">
         <div className="loading-spinner"></div>
-        <p>កំពុងទាញយកមុខម្ហូប & អាហារស្រស់ៗ...</p>
+        <p>កំពុងទាញយកបញ្ជីមុខទំនិញ...</p>
       </div>
     );
   }
@@ -229,144 +209,23 @@ const CardProduct = () => {
             <div className="products-sub-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
               <KhmerTevada size={22} />
               <KhmerPhkaChan size={15} />
-              <span>ម្ហូបខ្មែរឆ្ងាញ់ៗ & អាហារស្រស់ៗធម្មជាតិ • អបអរសាទរចូលឆ្នាំថ្មី</span>
+              <span>🛍️ ហាងលក់ទំនិញគ្រប់មុខ • គុណភាពខ្ពស់ • តម្លៃសមរម្យ</span>
               <KhmerPhkaChan size={15} />
             </div>
           </div>
-          <h2 className="products-title">បញ្ជីមុខម្ហូប & អាហារស្រស់ៗ</h2>
+          <h2 className="products-title">បញ្ជីមុខទំនិញទាំងអស់ (All Products)</h2>
           <KhmerDivider />
           <p className="products-description">
-            សូមជ្រើសរើសអាហារស្រស់ៗធម្មជាតិ 100% សម្រាប់ចម្អិនខ្លួនឯង ឬមុខម្ហូបចំអិនផ្ទាល់ក្តៅៗភ្លាមៗឈ្ងុយឆ្ងាញ់ មានអនាម័យខ្ពស់ ដឹកជញ្ជូនរហ័សដល់គេហដ្ឋាន។
+            ជ្រើសរើសទំនិញគ្រប់ប្រភេទតាមតម្រូវការរបស់អ្នក គុណភាពខ្ពស់ តម្លៃសមរម្យ ទូទាត់ងាយស្រួលតាម Bakong KHQR / ABA និងដឹកជញ្ជូនរហ័សដល់ទីតាំង។
           </p>
         </div>
 
-        {/* ========================================================
-            FEATURED SPOTLIGHT BANNERS (អាហារស្រស់ៗ vs អាហារចំអិនផ្ទាល់)
-            ======================================================== */}
-        <div className="food-spotlight-container">
-          {/* Spotlight Card 1: អាហារស្រស់ៗ */}
-          <div
-            className={`food-spotlight-card fresh-card ${
-              isCategorySelected("ស្រស់") ? "spotlight-active" : ""
-            }`}
-            onClick={() => {
-              const freshCat = categories.find((c) => c.includes("ស្រស់")) || "អាហារស្រស់ៗ (Fresh Food)";
-              setActiveCategory(freshCat);
-            }}
-          >
-            <KhmerCorner position="top-left" />
-            <KhmerCorner position="bottom-right" />
-            <div className="spotlight-badge fresh-tag">🌿 ស្រស់ធម្មជាតិ ១០០%</div>
-            <div className="spotlight-image-holder">
-              <img
-                src="https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=700&auto=format&fit=crop&q=80"
-                alt="Fresh Food"
-              />
-              <div className="spotlight-gradient-overlay fresh-grad"></div>
-            </div>
-            <div className="spotlight-content">
-              <h3 className="spotlight-title">🌿 អាហារស្រស់ៗ (Fresh Food)</h3>
-              <p className="spotlight-desc">
-                ត្រីសាល់ម៉ុនន័រវេសស្រស់ សាច់គោ Wagyu បង្គាសមុទ្រ និងបន្លែសរីរាង្គកាត់ស្រស់ៗរាល់ព្រឹក គុណភាពខ្ពស់ គ្មានជាតិគីមី។
-              </p>
-              <div className="spotlight-action">
-                <span className="spotlight-btn-text">
-                  {isCategorySelected("ស្រស់") ? "✓ កំពុងបង្ហាញ" : "មើលមុខទំនិញស្រស់ៗ →"}
-                </span>
-                <span className="spotlight-count">
-                  {products.filter((p) => p.category?.cat_name?.includes("ស្រស់")).length} មុខទំនិញ
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Spotlight Card 2: អាហារចំអិនផ្ទាល់ */}
-          <div
-            className={`food-spotlight-card cooked-card ${
-              isCategorySelected("ចំអិន") ? "spotlight-active" : ""
-            }`}
-            onClick={() => {
-              const cookedCat = categories.find((c) => c.includes("ចំអិន")) || "អាហារចំអិនផ្ទាល់ (Cooked Fresh)";
-              setActiveCategory(cookedCat);
-            }}
-          >
-            <KhmerCorner position="top-right" />
-            <KhmerCorner position="bottom-left" />
-            <div className="spotlight-badge cooked-tag">🍳 ចម្អិនក្តៅៗភ្លាមៗ</div>
-            <div className="spotlight-image-holder">
-              <img
-                src="https://images.unsplash.com/photo-1544025162-d76694265947?w=700&auto=format&fit=crop&q=80"
-                alt="Cooked Fresh Food"
-              />
-              <div className="spotlight-gradient-overlay cooked-grad"></div>
-            </div>
-            <div className="spotlight-content">
-              <h3 className="spotlight-title">🍳 អាហារចំអិនផ្ទាល់ (Cooked Fresh)</h3>
-              <p className="spotlight-desc">
-                ឡុកឡាក់សាច់គោបែបខ្មែរ បាយឆាគ្រឿងសមុទ្រ មាន់បំពងស្រួយ និងស៊ុបប្រហិតត្រីក្តៅៗ ចម្អិនផ្ទាល់ភ្លាមៗតាមការកុម្ម៉ង់។
-              </p>
-              <div className="spotlight-action">
-                <span className="spotlight-btn-text">
-                  {isCategorySelected("ចំអិន") ? "✓ កំពុងបង្ហាញ" : "មើលម្ហូបចំអិនផ្ទាល់ →"}
-                </span>
-                <span className="spotlight-count">
-                  {products.filter((p) => p.category?.cat_name?.includes("ចំអិន")).length} មុខទំនិញ
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Spotlight Card 3: ម្ហូប & នំចូលឆ្នាំថ្មី */}
-          <div
-            className={`food-spotlight-card kny-card ${
-              isCategorySelected("ចូលឆ្នាំ") || isCategorySelected("អន្សម") ? "spotlight-active" : ""
-            }`}
-            onClick={() => {
-              const knyCat = categories.find((c) => c.includes("ចូលឆ្នាំ") || c.includes("អន្សម")) || "all";
-              setActiveCategory(knyCat);
-            }}
-          >
-            <KhmerCorner position="top-right" />
-            <KhmerCorner position="bottom-left" />
-            <div className="spotlight-badge" style={{ background: 'linear-gradient(135deg, #f59e0b, #dc2626)', color: '#fff' }}>
-              🏮 ពិសេសចូលឆ្នាំថ្មី
-            </div>
-            <div className="spotlight-image-holder">
-              <img
-                src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=700&auto=format&fit=crop&q=80"
-                alt="Khmer New Year Food"
-              />
-              <div className="spotlight-gradient-overlay" style={{ background: 'linear-gradient(180deg, transparent 40%, rgba(154, 52, 18, 0.95) 100%)' }}></div>
-            </div>
-            <div className="spotlight-content">
-              <h3 className="spotlight-title">🏮 មុខម្ហូបចូលឆ្នាំថ្មី (KNY Specials)</h3>
-              <p className="spotlight-desc">
-                នំអន្សមជ្រូក-ចេក ការីសាច់មាន់នំប៉័ង ខសាច់ជ្រូកពងទា និងផ្លែឈើសែនទេវតា សម្រាប់អបអរពិធីបុណ្យចូលឆ្នាំថ្មីប្រពៃណីជាតិ!
-              </p>
-              <div className="spotlight-action">
-                <span className="spotlight-btn-text">
-                  {isCategorySelected("ចូលឆ្នាំ") || isCategorySelected("អន្សម") ? "✓ កំពុងបង្ហាញ" : "មើលម្ហូបចូលឆ្នាំថ្មី →"}
-                </span>
-                <span className="spotlight-count">
-                  ប្រូម៉ូសិន ២០%
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Filter Pills */}
+        {/* Dynamic Category Filter Pills */}
         <div className="category-filter">
           {categories.map((category) => (
             <button
               key={category}
-              className={`category-btn ${
-                activeCategory === category ||
-                (category.includes("ស្រស់") && isCategorySelected("ស្រស់")) ||
-                (category.includes("ចំអិន") && isCategorySelected("ចំអិន"))
-                  ? "active"
-                  : ""
-              }`}
+              className={`category-btn ${activeCategory === category ? "active" : ""}`}
               onClick={() => handleCategoryFilter(category)}
             >
               {getCategoryLabel(category)}
@@ -377,7 +236,7 @@ const CardProduct = () => {
         {/* Products Grid */}
         {filteredProducts.length === 0 ? (
           <div className="no-products">
-            <div className="no-products-icon">🍽️</div>
+            <div className="no-products-icon">📦</div>
             <p>មិនមានមុខទំនិញនៅក្នុងប្រភេទនេះនៅឡើយទេ</p>
             <button className="category-btn active" onClick={() => setActiveCategory("all")}>
               បង្ហាញទាំងអស់
@@ -386,29 +245,19 @@ const CardProduct = () => {
         ) : (
           <div className="products-grid">
             {filteredProducts.map((product) => {
-              const catName = product.category?.cat_name || "";
-              const isFresh = catName.includes("ស្រស់") || catName.toLowerCase().includes("fresh");
-              const isCooked = catName.includes("ចំអិន") || catName.toLowerCase().includes("cooked");
-              const isDrink = catName.includes("ភេសជ្ជៈ") || catName.toLowerCase().includes("drink");
+              const catName = product.category?.cat_name || "ទំនិញ";
 
               return (
                 <div
-                  className={`product-card ${isFresh ? "card-fresh" : ""} ${isCooked ? "card-cooked" : ""}`}
+                  className="product-card"
                   key={product.pro_id}
                   data-id={product.pro_id}
                   onClick={() => handleViewDetails(product.pro_id)}
                 >
                   <KhmerCorner position="top-right" />
                   {/* Category Pill Tag */}
-                  <div
-                    className={`product-type-pill ${
-                      isFresh ? "type-fresh" : isCooked ? "type-cooked" : isDrink ? "type-drink" : ""
-                    }`}
-                  >
-                    {isFresh && "🌿 អាហារស្រស់ៗ"}
-                    {isCooked && "🍳 ចំអិនក្តៅៗ"}
-                    {isDrink && "🥤 ភេសជ្ជៈ"}
-                    {!isFresh && !isCooked && !isDrink && (catName || "General")}
+                  <div className="product-type-pill">
+                    {catName}
                   </div>
 
                   {parseFloat(product.discount) > 0 && (
