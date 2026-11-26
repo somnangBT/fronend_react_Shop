@@ -43,12 +43,24 @@ const About = () => {
                     
                     <div className="about-text-container">
                         <p className="about-text">
-                            <strong>LuckShop (DeliciousEats)</strong> គឺជាហាងលក់ទំនិញគ្រប់មុខតាមអនឡាញនៅរាជធានីភ្នំពេញ ដែលនាំយកទំនិញចម្រុះមានគុណភាពខ្ពស់ និងតម្លៃសមរម្យជូនអតិថិជនគ្រប់រូប។
+                            <strong>LuckShop</strong> គឺជាហាងលក់ទំនិញគ្រប់មុខតាមអនឡាញនៅរាជធានីភ្នំពេញ ដែលនាំយកទំនិញចម្រុះមានគុណភាពខ្ពស់ និងតម្លៃសមរម្យជូនអតិថិជនគ្រប់រូប។
                         </p>
                         
                         <p className="about-text">
                             អតិថិជនអាចជ្រើសរើសបញ្ជាទិញទំនិញគ្រប់ប្រភេទ ទូទាត់ងាយស្រួលតាម Bakong KHQR / ABA KHQR និងតាមដានស្ថានភាពដឹកជញ្ជូនផ្ទាល់បានយ៉ាងរហ័ស។
                         </p>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '12px 16px', borderRadius: '12px', background: 'rgba(15, 23, 42, 0.72)', border: '1px solid rgba(255, 255, 255, 0.1)', margin: '0.5rem 0 1.25rem' }}>
+                            <img
+                                src="/images/yorn-somnang.jpg"
+                                alt="YORN SOMNANG"
+                                style={{ width: '58px', height: '58px', borderRadius: '50%', objectFit: 'cover', objectPosition: 'top center', border: '2px solid rgba(245, 158, 11, 0.65)', flexShrink: 0 }}
+                            />
+                            <div>
+                                <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#f8fafc', letterSpacing: '0.4px' }}>YORN SOMNANG</div>
+                                <div style={{ fontSize: '0.84rem', color: '#94a3b8' }}>ម្ចាស់ហាង &amp; អ្នកអភិវឌ្ឍន៍ LuckShop</div>
+                            </div>
+                        </div>
                         
                         <div className="about-highlights">
                             <div className="about-highlight-item">
@@ -163,18 +175,18 @@ const About = () => {
                 </div>
                 
                 <div className="about-team">
-                    <h3 className="team-title">ក្រុមការងារអភិវឌ្ឍន៍ <span className="team-title-accent">DeliciousEats</span></h3>
+                    <h3 className="team-title">ក្រុមការងារអភិវឌ្ឍន៍ <span className="team-title-accent">LuckShop</span></h3>
                     <KhmerDivider />
                     
                     <div className="team-members">
                         <div className="team-member-card">
                             <div className="member-image-container">
                                 <div className="member-image-glow"></div>
-                                <img src="https://i.pinimg.com/736x/ed/0a/1e/ed0a1e01f31048314bbb5320acf9e813.jpg" alt="Yorn somnang" className="member-image" />
+                                <img src="/images/yorn-somnang.jpg" alt="YORN SOMNANG" className="member-image" />
                             </div>
                             <div className="member-info">
-                                <h4 className="member-name">Yorn Somnang</h4>
-                                <p className="member-role">Full-Stack Developer</p>
+                                <h4 className="member-name">YORN SOMNANG</h4>
+                                <p className="member-role">Founder &amp; Full-Stack Developer</p>
                                 <p className="member-bio">ដឹកនាំការរចនាប្រព័ន្ធ និងអភិវឌ្ឍន៍ Backend/Frontend</p>
                             </div>
                         </div>
