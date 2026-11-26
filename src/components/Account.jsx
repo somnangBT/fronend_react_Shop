@@ -21,17 +21,32 @@ const Account = () => {
         name: '',
         email: ''
     });
+    const [showPasswordForm, setShowPasswordForm] = useState(false);
+    const [passwordForm, setPasswordForm] = useState({
+        current_password: '',
+        password: '',
+        password_confirmation: ''
+    });
+    const [changingPassword, setChangingPassword] = useState(false);
     const [logoutConfirm, setLogoutConfirm] = useState(false);
     const [orders, setOrders] = useState([]);
     const [loadingOrders, setLoadingOrders] = useState(false);
 
-    const fetchUserOrders = async (userId, userEmail) => {
+    const fetchUserOrders = async (userId, userEmail, userToken) => {
         setLoadingOrders(true);
         try {
             const params = new URLSearchParams();
             if (userId) params.append('user_id', userId);
             if (userEmail) params.append('email', userEmail);
-            const response = await fetch(`${API_BASE_URL}/api/orders?${params.toString()}`);
+            const headers = { Accept: 'application/json' };
+            if (userToken && userToken !== 'token_placeholder') {
+                headers.Authorization = `Bearer ${userToken}`;
+            }
+            const response = await fetch(`${API_BASE_URL}/api/orders?${params.toString()}`, { headers });
+            if (response.status === 401) {
+                showNotification('សូម Logout រួច Login ម្ដងទៀត ដើម្បីមើលប្រវត្តិបញ្ជាទិញ។', 'error');
+                return;
+            }
             const result = await response.json();
             if (result.status === 'success') {
                 const arr = Array.isArray(result.data)
@@ -48,8 +63,9 @@ const Account = () => {
 
     useEffect(() => {
         if (activeTab === 'orders' && user) {
-            fetchUserOrders(user.id, user.email);
+            fetchUserOrders(user.id, user.email, user.token);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeTab, user]);
     
     // Fetch user data on component mount
@@ -167,6 +183,52 @@ const Account = () => {
         }
     };
     
+    // Handle change password via Backend API
+    const handleChangePassword = async (e) => {
+        e.preventDefault();
+        if (!passwordForm.current_password || passwordForm.password.length < 6) {
+            showNotification('ពាក្យសម្ងាត់ថ្មីត្រូវមានយ៉ាងតិច ៦ តួអក្សរ។', 'error');
+            return;
+        }
+        if (passwordForm.password !== passwordForm.password_confirmation) {
+            showNotification('ពាក្យសម្ងាត់ថ្មី និងការបញ្ជាក់មិនត្រូវគ្នាទេ។', 'error');
+            return;
+        }
+        if (!user?.token || user.token === 'token_placeholder') {
+            showNotification('សូម Logout រួច Login ម្ដងទៀត ដើម្បីផ្លាស់ប្តូរពាក្យសម្ងាត់។', 'error');
+            return;
+        }
+
+        setChangingPassword(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/change-password`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${user.token}`
+                },
+                body: JSON.stringify(passwordForm)
+            });
+
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                const firstErr = data.errors ? Object.values(data.errors).flat()[0] : null;
+                showNotification(firstErr || data.message || 'មិនអាចផ្លាស់ប្តូរពាក្យសម្ងាត់បានទេ។', 'error');
+                return;
+            }
+
+            setPasswordForm({ current_password: '', password: '', password_confirmation: '' });
+            setShowPasswordForm(false);
+            showNotification(data.message || 'បានផ្លាស់ប្តូរពាក្យសម្ងាត់ជោគជ័យ!', 'success');
+        } catch (err) {
+            console.error('Change password error:', err);
+            showNotification('មិនអាចភ្ជាប់ទៅ Server បានទេ។', 'error');
+        } finally {
+            setChangingPassword(false);
+        }
+    };
+
     // Handle logout
     const handleLogout = () => {
         if (!logoutConfirm) {
@@ -492,10 +554,60 @@ const Account = () => {
                                 <div className="security-info">
                                     <div className="password-section">
                                         <h3>Password</h3>
-                                        <p>Your password was last changed on: <span>Never</span></p>
-                                        <button className="change-password-btn">
-                                            Change Password
-                                        </button>
+                                        <p>ផ្លាស់ប្តូរពាក្យសម្ងាត់គណនីរបស់អ្នកនៅទីនេះ។</p>
+                                        {!showPasswordForm ? (
+                                            <button
+                                                type="button"
+                                                className="change-password-btn"
+                                                onClick={() => setShowPasswordForm(true)}
+                                            >
+                                                Change Password
+                                            </button>
+                                        ) : (
+                                            <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '380px', marginTop: '12px' }}>
+                                                <input
+                                                    type="password"
+                                                    placeholder="ពាក្យសម្ងាត់បច្ចុប្បន្ន (Current Password)"
+                                                    value={passwordForm.current_password}
+                                                    onChange={(e) => setPasswordForm({ ...passwordForm, current_password: e.target.value })}
+                                                    required
+                                                    style={{ padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(15, 23, 42, 0.72)', color: '#f8fafc' }}
+                                                />
+                                                <input
+                                                    type="password"
+                                                    placeholder="ពាក្យសម្ងាត់ថ្មី (New Password, min 6)"
+                                                    value={passwordForm.password}
+                                                    onChange={(e) => setPasswordForm({ ...passwordForm, password: e.target.value })}
+                                                    required
+                                                    minLength={6}
+                                                    style={{ padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(15, 23, 42, 0.72)', color: '#f8fafc' }}
+                                                />
+                                                <input
+                                                    type="password"
+                                                    placeholder="បញ្ជាក់ពាក្យសម្ងាត់ថ្មី (Confirm Password)"
+                                                    value={passwordForm.password_confirmation}
+                                                    onChange={(e) => setPasswordForm({ ...passwordForm, password_confirmation: e.target.value })}
+                                                    required
+                                                    minLength={6}
+                                                    style={{ padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(15, 23, 42, 0.72)', color: '#f8fafc' }}
+                                                />
+                                                <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+                                                    <button type="submit" className="change-password-btn" disabled={changingPassword}>
+                                                        {changingPassword ? 'កំពុងរក្សាទុក...' : 'រក្សាទុកពាក្យសម្ងាត់ថ្មី'}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="cancel-btn"
+                                                        onClick={() => {
+                                                            setShowPasswordForm(false);
+                                                            setPasswordForm({ current_password: '', password: '', password_confirmation: '' });
+                                                        }}
+                                                    >
+                                                        បោះបង់
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        )}
                                     </div>
                                     
                                     <div className="login-activity">

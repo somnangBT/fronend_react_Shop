@@ -1,18 +1,51 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { API_BASE_URL } from '../config/api';
 import { KhmerAngkorCrest, KhmerFrieze } from './KhmerOrnament';
 import "./styles/Footer.css";
 
 const Footer = () => {
   const [email, setEmail] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
+  const [subscribeMsg, setSubscribeMsg] = useState('');
+  const [subscribeError, setSubscribeError] = useState('');
 
-  const handleSubscribe = (e) => {
+  const handleSubscribe = async (e) => {
     e.preventDefault();
-    if (email) {
+    if (!email.trim() || submitting) return;
+
+    setSubmitting(true);
+    setSubscribeError('');
+    setSubscribeMsg('');
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/newsletter`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ email: email.trim() })
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const firstErr = data.errors ? Object.values(data.errors).flat()[0] : null;
+        throw new Error(firstErr || data.message || 'មិនអាចចុះឈ្មោះបានទេ។');
+      }
+
       setSubscribed(true);
+      setSubscribeMsg(data.message || '🎉 អរគុណសម្រាប់ការចុះឈ្មោះ! យើងនឹងផ្ញើប្រូម៉ូសិនពិសេសជូនអ្នក។');
       setEmail('');
-      setTimeout(() => setSubscribed(false), 4000);
+      setTimeout(() => {
+        setSubscribed(false);
+        setSubscribeMsg('');
+      }, 5000);
+    } catch (err) {
+      setSubscribeError(err.message || 'មានបញ្ហាក្នុងការចុះឈ្មោះ។ សូមព្យាយាមម្ដងទៀត។');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -30,14 +63,15 @@ const Footer = () => {
           <div className="footer-brand">
             <h2 className="footer-logo" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
               <KhmerAngkorCrest size={28} />
-              <span>Delicious<span>Eats</span></span>
+              <span>Luck<span>Shop</span></span>
             </h2>
             <p className="footer-tagline">
               ហាងលក់ទំនិញគ្រប់មុខអនឡាញ គុណភាពខ្ពស់ តម្លៃសមរម្យ ទូទាត់ងាយស្រួលតាម Bakong / ABA KHQR និងដឹកជញ្ជូនរហ័សដល់ទីតាំង។
             </p>
             <div className="footer-contact-brief" style={{ marginTop: '0.8rem', fontSize: '0.9rem', color: '#b2bec3', lineHeight: '1.6' }}>
               <div>📍 រាជធានីភ្នំពេញ, ព្រះរាជាណាចក្រកម្ពុជា</div>
-              <div>📞 012 345 678 / 098 765 432</div>
+              <div>📞 +855 969 420 333</div>
+              <div>📧 younsomnang4@gmail.com</div>
               <div>⏰ បើកបម្រើជារៀងរាល់ថ្ងៃ: ៧:០០ ព្រឹក - ៩:០០ យប់</div>
             </div>
             <div className="footer-social" style={{ marginTop: '1rem' }}>
@@ -125,8 +159,10 @@ const Footer = () => {
               />
               <div className="input-focus-effect"></div>
             </div>
-            <button type="submit" className="newsletter-button">
-              <span className="button-text">{subscribed ? '✓ បានចុះឈ្មោះ' : 'ចុះឈ្មោះ'}</span>
+            <button type="submit" className="newsletter-button" disabled={submitting}>
+              <span className="button-text">
+                {submitting ? 'កំពុងចុះឈ្មោះ...' : subscribed ? '✓ បានចុះឈ្មោះ' : 'ចុះឈ្មោះ'}
+              </span>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="button-icon">
                 <line x1="5" y1="12" x2="19" y2="12"></line>
                 <polyline points="12 5 19 12 12 19"></polyline>
@@ -135,14 +171,19 @@ const Footer = () => {
           </form>
           {subscribed && (
             <p style={{ color: '#2ec4b6', fontSize: '0.85rem', marginTop: '0.5rem' }}>
-              🎉 អរគុណសម្រាប់ការចុះឈ្មោះ! យើងនឹងផ្ញើប្រូម៉ូសិនពិសេសជូនអ្នកឆាប់ៗនេះ។
+              {subscribeMsg}
+            </p>
+          )}
+          {subscribeError && (
+            <p style={{ color: '#f87171', fontSize: '0.85rem', marginTop: '0.5rem' }}>
+              {subscribeError}
             </p>
           )}
         </div>
         
         <div className="footer-bottom">
           <div className="footer-copyright">
-            <p className="copyright-text">&copy; {new Date().getFullYear()} LuckShop • DeliciousEats. រក្សាសិទ្ធិគ្រប់យ៉ាង។ គុណភាពខ្ពស់ ទំនុកចិត្តខ្ពស់។</p>
+            <p className="copyright-text">&copy; {new Date().getFullYear()} LuckShop. រក្សាសិទ្ធិគ្រប់យ៉ាង។ គុណភាពខ្ពស់ ទំនុកចិត្តខ្ពស់។</p>
           </div>
           <div className="footer-badges">
             <span className="footer-badge">🌟 គុណភាព ១០០%</span>

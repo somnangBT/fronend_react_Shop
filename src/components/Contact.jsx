@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../config/api';
 import { KhmerDivider, KhmerPediment, KhmerPhkaChan } from './KhmerOrnament';
 import "./styles/Contact.css";
 
@@ -24,18 +25,28 @@ const Contact = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
+        setSubmitStatus(null);
         
         try {
-            // Create mailto link with form data
-            const mailtoLink = `mailto:younsomnang4@gmail.com?subject=${encodeURIComponent(formData.subject || 'សារពីអតិថិជន DeliciousEats')}&body=${encodeURIComponent(
-                `ឈ្មោះ: ${formData.name}\nអ៊ីមែល: ${formData.email}\n\nខ្លឹមសារសារ:\n${formData.message}`
-            )}`;
-            
-            // Open email client
-            window.location.href = mailtoLink;
-            
+            const response = await fetch(`${API_BASE_URL}/api/contact`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: formData.name.trim(),
+                    email: formData.email.trim(),
+                    subject: formData.subject,
+                    message: formData.message.trim()
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to send message');
+            }
+
             setSubmitStatus('success');
-            // Reset form after successful submission
             setFormData({
                 name: '',
                 email: '',
@@ -43,14 +54,13 @@ const Contact = () => {
                 message: ''
             });
         } catch (error) {
-            console.error('Error sending email:', error);
+            console.error('Error sending contact message:', error);
             setSubmitStatus('error');
         } finally {
             setIsSubmitting(false);
-            // Clear status after 5 seconds
             setTimeout(() => {
                 setSubmitStatus(null);
-            }, 5000);
+            }, 6000);
         }
     };
     
@@ -72,7 +82,7 @@ const Contact = () => {
                     </div>
                     <h2 className="contact-title">
                         ទំនាក់ទំនងមកកាន់
-                        <span className="contact-title-accent" data-text="DeliciousEats"> DeliciousEats</span>
+                        <span className="contact-title-accent" data-text="LuckShop"> LuckShop</span>
                     </h2>
                     <KhmerDivider />
                     <p className="contact-subtitle">
@@ -231,7 +241,7 @@ const Contact = () => {
                             </div>
                             <div className="info-content">
                                 <h4 className="info-title">ព័ត៌មានទំនាក់ទំនង</h4>
-                                <p className="info-text">ទូរស័ព្ទ: +855 (0) 969 420 333 / 012 345 678</p>
+                                <p className="info-text">ទូរស័ព្ទ: +855 969 420 333</p>
                                 <p className="info-text">អ៊ីមែល: younsomnang4@gmail.com</p>
                             </div>
                         </div>
@@ -276,7 +286,7 @@ const Contact = () => {
                             <div className="map-pulse"></div>
                         </div>
                         <iframe 
-                            title="DeliciousEats Location"
+                            title="LuckShop Location"
                             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d250151.94732948628!2d104.7340319545897!3d11.552552384962324!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3109513dc76a6be3%3A0x9c010ee85ab525bb!2sPhnom%20Penh!5e0!3m2!1sen!2skh!4v1684930946039!5m2!1sen!2skh" 
                             width="100%" 
                             height="100%" 

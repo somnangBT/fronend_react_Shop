@@ -393,19 +393,29 @@ const Checkout = () => {
     setError('');
 
     try {
-      // 1. Upload payment slip to ImgBB if attached
+      // 1. Upload payment slip via Backend ImgBB proxy if attached
       let paymentProofUrl = null;
       if (slipFile && paymentMethod === 'khqr') {
         try {
-          const formData = new FormData();
-          formData.append('image', slipFile);
-          const imgbbRes = await fetch('https://api.imgbb.com/1/upload?key=b15ed70ff4627048a2b01133f687a336', {
+          const slipFormData = new FormData();
+          slipFormData.append('image', slipFile);
+          const uploadHeaders = { Accept: 'application/json' };
+          if (user?.token && user.token !== 'token_placeholder') {
+            uploadHeaders.Authorization = `Bearer ${user.token}`;
+          }
+          const uploadRes = await fetch(`${API_BASE_URL}/api/upload-slip`, {
             method: 'POST',
-            body: formData
+            headers: uploadHeaders,
+            body: slipFormData
           });
-          const imgbbData = await imgbbRes.json();
-          if (imgbbData?.data?.url) {
-            paymentProofUrl = imgbbData.data.url;
+          if (uploadRes.status === 401) {
+            setError('សូម Logout រួច Login គណនីម្ដងទៀត ដើម្បីបង្ហោះរូបវិក្កយបត្រ (Slip)!');
+            setLoading(false);
+            return;
+          }
+          const uploadData = await uploadRes.json().catch(() => ({}));
+          if (uploadRes.ok && uploadData?.url) {
+            paymentProofUrl = uploadData.url;
           }
         } catch (imgbbErr) {
           console.warn('Slip upload failed:', imgbbErr);

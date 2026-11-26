@@ -18,6 +18,15 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isSignUp, setIsSignUp] = useState(location.pathname === '/register' || location.state?.isSignUp || false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [resetStep, setResetStep] = useState(1);
+  const [resetData, setResetData] = useState({
+    email: '',
+    code: '',
+    password: '',
+    password_confirmation: ''
+  });
+  const [resetNotice, setResetNotice] = useState('');
   const [signupData, setSignupData] = useState({
     name: '',
     email: '',
@@ -28,6 +37,7 @@ const Login = () => {
   useEffect(() => {
     if (location.pathname === '/register') {
       setIsSignUp(true);
+      setIsForgotPassword(false);
     } else if (location.pathname === '/login' && !location.state?.isSignUp) {
       setIsSignUp(false);
     }
@@ -222,13 +232,117 @@ const Login = () => {
     }
   };
 
-  // Handle "Forgot Password" click
+  // Handle "Forgot Password" click -> open recovery flow
   const handleForgotPassword = () => {
-    if (!formData.email) {
-      setError('Please enter your email address first.');
+    setError('');
+    setResetNotice('');
+    setIsSignUp(false);
+    setResetStep(1);
+    setResetData({
+      email: formData.email || '',
+      code: '',
+      password: '',
+      password_confirmation: ''
+    });
+    setIsForgotPassword(true);
+  };
+
+  const handleResetChange = (e) => {
+    setResetData({
+      ...resetData,
+      [e.target.name]: e.target.value
+    });
+    if (error) setError('');
+  };
+
+  const handleRequestResetCode = async (e) => {
+    e.preventDefault();
+    setError('');
+    setResetNotice('');
+
+    if (!validateEmail(resetData.email.trim())) {
+      setError('សូមបញ្ចូលអ៊ីមែលឱ្យបានត្រឹមត្រូវ។');
       return;
     }
-    showNotification('Password reset link sent to your email!', 'info');
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/forgot-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ email: resetData.email.trim() })
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const firstErr = data.errors ? Object.values(data.errors).flat()[0] : null;
+        throw new Error(firstErr || data.message || 'មិនអាចផ្ញើលេខកូដបានទេ។');
+      }
+
+      setResetNotice(data.message || 'សំណើកូដ ៦ ខ្ទង់ត្រូវបានបញ្ជូនរួចរាល់!');
+      setResetStep(2);
+    } catch (err) {
+      setError(err.message || 'មានបញ្ហាក្នុងការស្នើសុំលេខកូដ។');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResetPasswordSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (!resetData.code.trim() || resetData.code.trim().length !== 6) {
+      setError('សូមបញ្ចូលលេខកូដផ្ទៀងផ្ទាត់ ៦ ខ្ទង់។');
+      return;
+    }
+    if (resetData.password.length < 6) {
+      setError('ពាក្យសម្ងាត់ថ្មីត្រូវមានយ៉ាងតិច ៦ តួអក្សរ។');
+      return;
+    }
+    if (resetData.password !== resetData.password_confirmation) {
+      setError('ពាក្យសម្ងាត់ថ្មី និងការបញ្ជាក់មិនត្រូវគ្នាទេ។');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          email: resetData.email.trim(),
+          code: resetData.code.trim(),
+          password: resetData.password,
+          password_confirmation: resetData.password_confirmation
+        })
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const firstErr = data.errors ? Object.values(data.errors).flat()[0] : null;
+        throw new Error(firstErr || data.message || 'មិនអាចកំណត់ពាក្យសម្ងាត់ថ្មីបានទេ។');
+      }
+
+      showNotification(data.message || 'បានផ្លាស់ប្តូរពាក្យសម្ងាត់ជោគជ័យ!', 'success');
+      setIsForgotPassword(false);
+      setResetStep(1);
+      setResetNotice('');
+      setFormData({
+        email: resetData.email.trim(),
+        password: ''
+      });
+    } catch (err) {
+      setError(err.message || 'មានបញ្ហាក្នុងការកំណត់ពាក្យសម្ងាត់។');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Show notification
@@ -258,9 +372,21 @@ const Login = () => {
       <div className="login-container">
         <div className="login-form-container">
           <div className="login-header">
-            <h1 className="login-title">{isSignUp ? 'Create Account' : 'Welcome Back'}</h1>
+            <h1 className="login-title">
+              {isForgotPassword
+                ? 'Reset Password'
+                : isSignUp
+                ? 'Create Account'
+                : 'Welcome Back'}
+            </h1>
             <p className="login-subtitle">
-              {isSignUp ? 'Join our cyberpunk community' : 'Login to access your account'}
+              {isForgotPassword
+                ? resetStep === 1
+                  ? 'Enter your email to receive a 6-digit verification code'
+                  : 'Enter the 6-digit code and set your new password'
+                : isSignUp
+                ? 'Create your LuckShop account'
+                : 'Login to access your account'}
             </p>
           </div>
 
@@ -273,7 +399,166 @@ const Login = () => {
             </div>
           )}
 
-          {isSignUp ? (
+          {isForgotPassword ? (
+            resetStep === 1 ? (
+              <form className="login-form" onSubmit={handleRequestResetCode}>
+                <div className="form-group">
+                  <label htmlFor="reset-email">Email Address</label>
+                  <div className="input-wrapper">
+                    <input
+                      type="email"
+                      id="reset-email"
+                      name="email"
+                      value={resetData.email}
+                      onChange={handleResetChange}
+                      required
+                      placeholder="Enter your account email"
+                      disabled={isLoading}
+                    />
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="input-icon">
+                      <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                      <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                    </svg>
+                    <div className="input-focus-effect"></div>
+                  </div>
+                </div>
+
+                <button type="submit" className="login-btn" disabled={isLoading}>
+                  {isLoading ? 'Sending Request...' : 'Send Reset Code'}
+                  <div className="btn-glow"></div>
+                </button>
+
+                <div className="login-footer">
+                  <p>
+                    Remember your password?{' '}
+                    <button
+                      type="button"
+                      className="switch-form-btn"
+                      onClick={() => {
+                        setIsForgotPassword(false);
+                        setError('');
+                      }}
+                      disabled={isLoading}
+                    >
+                      Back to Log In
+                    </button>
+                  </p>
+                </div>
+              </form>
+            ) : (
+              <form className="login-form" onSubmit={handleResetPasswordSubmit}>
+                {resetNotice && (
+                  <div
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      background: 'rgba(14, 165, 233, 0.14)',
+                      border: '1px solid rgba(56, 189, 248, 0.35)',
+                      color: '#bae6fd',
+                      fontSize: '0.85rem',
+                      marginBottom: '12px',
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {resetNotice}
+                  </div>
+                )}
+
+                <div className="form-group">
+                  <label htmlFor="reset-code">6-Digit Verification Code</label>
+                  <div className="input-wrapper">
+                    <input
+                      type="text"
+                      id="reset-code"
+                      name="code"
+                      maxLength={6}
+                      value={resetData.code}
+                      onChange={handleResetChange}
+                      required
+                      placeholder="123456"
+                      disabled={isLoading}
+                    />
+                    <div className="input-focus-effect"></div>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="reset-password">New Password</label>
+                  <div className="input-wrapper">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id="reset-password"
+                      name="password"
+                      value={resetData.password}
+                      onChange={handleResetChange}
+                      required
+                      placeholder="Create a new password (min 6)"
+                      disabled={isLoading}
+                    />
+                    <button
+                      type="button"
+                      className="password-toggle"
+                      onClick={togglePasswordVisibility}
+                      disabled={isLoading}
+                    >
+                      {showPassword ? 'Hide' : 'Show'}
+                    </button>
+                    <div className="input-focus-effect"></div>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="reset-password-confirm">Confirm New Password</label>
+                  <div className="input-wrapper">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id="reset-password-confirm"
+                      name="password_confirmation"
+                      value={resetData.password_confirmation}
+                      onChange={handleResetChange}
+                      required
+                      placeholder="Confirm new password"
+                      disabled={isLoading}
+                    />
+                    <div className="input-focus-effect"></div>
+                  </div>
+                </div>
+
+                <button type="submit" className="login-btn" disabled={isLoading}>
+                  {isLoading ? 'Resetting...' : 'Reset Password'}
+                  <div className="btn-glow"></div>
+                </button>
+
+                <div className="login-footer">
+                  <p>
+                    <button
+                      type="button"
+                      className="switch-form-btn"
+                      onClick={() => {
+                        setResetStep(1);
+                        setError('');
+                      }}
+                      disabled={isLoading}
+                    >
+                      Resend Code
+                    </button>{' '}
+                    |{' '}
+                    <button
+                      type="button"
+                      className="switch-form-btn"
+                      onClick={() => {
+                        setIsForgotPassword(false);
+                        setError('');
+                      }}
+                      disabled={isLoading}
+                    >
+                      Back to Log In
+                    </button>
+                  </p>
+                </div>
+              </form>
+            )
+          ) : isSignUp ? (
             <form className="login-form" onSubmit={handleSignupSubmit}>
               <div className="form-group">
                 <label htmlFor="name">Full Name</label>

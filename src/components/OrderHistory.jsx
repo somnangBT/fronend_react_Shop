@@ -48,6 +48,10 @@ const OrderHistory = () => {
         headers
       });
 
+      if (response.status === 401) {
+        throw new Error('សូម Logout រួច Login ម្ដងទៀត ដើម្បីមើលប្រវត្តិបញ្ជាទិញរបស់អ្នក។ (Session expired)');
+      }
+
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -65,7 +69,7 @@ const OrderHistory = () => {
     } catch (err) {
       console.error('Error fetching orders:', err);
       if (!silent) {
-        setError('មិនអាចទាញយកប្រវត្តិបញ្ជាទិញបានទេ។ សូមព្យាយាមម្តងទៀត។ (Failed to load orders)');
+        setError(err.message || 'មិនអាចទាញយកប្រវត្តិបញ្ជាទិញបានទេ។ សូមព្យាយាមម្តងទៀត។ (Failed to load orders)');
       }
     } finally {
       if (!silent) {
