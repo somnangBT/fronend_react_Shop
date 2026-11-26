@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../CartContext';
 import { useAuth } from '../AuthContext';
-import { KhmerAngkorCrest, KhmerFrieze, KhmerNewYearBanner } from './KhmerOrnament';
+import { KhmerFrieze, KhmerNewYearBanner } from './KhmerOrnament';
 import { API_BASE_URL } from '../config/api';
 import './styles/Navbar.css';
 
@@ -91,8 +91,20 @@ const Navbar = () => {
       <div className="nav-container">
         {/* Brand Logo */}
         <div className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Link to="/" className="brand-logo-link" title="DeliciousEats អាហារខ្មែរឆ្ងាញ់ៗ">
-            <KhmerAngkorCrest size={28} className="brand-crest" />
+          <Link to="/" className="brand-logo-link" title="DeliciousEats - LuckShop">
+            <img
+              src="/logo192.png"
+              alt="LuckShop Logo"
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                border: '1.5px solid #f59e0b',
+                boxShadow: '0 0 8px rgba(245, 158, 11, 0.35)',
+                flexShrink: 0,
+              }}
+            />
             Delicious<span>Eats</span>
           </Link>
           <span className="nav-kny-badge" style={{
