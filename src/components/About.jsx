@@ -175,10 +175,10 @@ const About = () => {
                 </div>
                 
                 <div className="about-team">
-                    <h3 className="team-title">ក្រុមការងារអភិវឌ្ឍន៍ <span className="team-title-accent">LuckShop</span></h3>
+                    <h3 className="team-title">ស្ថាបនិក &amp; អ្នកអភិវឌ្ឍន៍ <span className="team-title-accent">LuckShop</span></h3>
                     <KhmerDivider />
                     
-                    <div className="team-members">
+                    <div className="team-members" style={{ gridTemplateColumns: 'minmax(280px, 380px)', justifyContent: 'center' }}>
                         <div className="team-member-card">
                             <div className="member-image-container">
                                 <div className="member-image-glow"></div>
@@ -187,67 +187,7 @@ const About = () => {
                             <div className="member-info">
                                 <h4 className="member-name">YORN SOMNANG</h4>
                                 <p className="member-role">Founder &amp; Full-Stack Developer</p>
-                                <p className="member-bio">ដឹកនាំការរចនាប្រព័ន្ធ និងអភិវឌ្ឍន៍ Backend/Frontend</p>
-                            </div>
-                        </div>
-                        
-                        <div className="team-member-card">
-                            <div className="member-image-container">
-                                <div className="member-image-glow"></div>
-                                <img src="https://i.pinimg.com/736x/ed/0a/1e/ed0a1e01f31048314bbb5320acf9e813.jpg" alt="Un pheasa" className="member-image" />
-                            </div>
-                            <div className="member-info">
-                                <h4 className="member-name">Un Pheasa</h4>
-                                <p className="member-role">Frontend Developer</p>
-                                <p className="member-bio">អភិវឌ្ឍន៍ផ្ទាំង UI/UX និងមុខងារទំនាក់ទំនងអ្នកប្រើប្រាស់</p>
-                            </div>
-                        </div>
-                        
-                        <div className="team-member-card">
-                            <div className="member-image-container">
-                                <div className="member-image-glow"></div>
-                                <img src="https://i.pinimg.com/736x/ed/0a/1e/ed0a1e01f31048314bbb5320acf9e813.jpg" alt="srouch srean" className="member-image" />
-                            </div>
-                            <div className="member-info">
-                                <h4 className="member-name">Srouch Srean</h4>
-                                <p className="member-role">Backend Developer</p>
-                                <p className="member-bio">រៀបចំ API និង Database គ្រប់គ្រងទិន្នន័យផលិតផល</p>
-                            </div>
-                        </div>
-                        
-                        <div className="team-member-card">
-                            <div className="member-image-container">
-                                <div className="member-image-glow"></div>
-                                <img src="https://i.pinimg.com/736x/ed/0a/1e/ed0a1e01f31048314bbb5320acf9e813.jpg" alt="pan sothea" className="member-image" />
-                            </div>
-                            <div className="member-info">
-                                <h4 className="member-name">Pan Sothea</h4>
-                                <p className="member-role">UI/UX Designer</p>
-                                <p className="member-bio">រចនារូបរាងទំព័រ និងការផ្សំក្បាច់រចនាបថខ្មែរ</p>
-                            </div>
-                        </div>
-                        
-                        <div className="team-member-card">
-                            <div className="member-image-container">
-                                <div className="member-image-glow"></div>
-                                <img src="https://i.pinimg.com/736x/ed/0a/1e/ed0a1e01f31048314bbb5320acf9e813.jpg" alt="prak porsann" className="member-image" />
-                            </div>
-                            <div className="member-info">
-                                <h4 className="member-name">Prak Porsann</h4>
-                                <p className="member-role">Quality Assurance</p>
-                                <p className="member-bio">ត្រួតពិនិត្យមុខងារ និងគុណភាពកម្មវិធី</p>
-                            </div>
-                        </div>
-                        
-                        <div className="team-member-card">
-                            <div className="member-image-container">
-                                <div className="member-image-glow"></div>
-                                <img src="https://i.pinimg.com/736x/ed/0a/1e/ed0a1e01f31048314bbb5320acf9e813.jpg" alt="Nhanh kimson" className="member-image" />
-                            </div>
-                            <div className="member-info">
-                                <h4 className="member-name">Nhanh Kimson</h4>
-                                <p className="member-role">Frontend Developer</p>
-                                <p className="member-bio">អភិវឌ្ឍន៍មុខងារបញ្ជាទិញ និងប្រព័ន្ធ Cart/Checkout</p>
+                                <p className="member-bio">ម្ចាស់ហាង និងដឹកនាំការរចនា អភិវឌ្ឍន៍ប្រព័ន្ធ Backend / Frontend របស់ LuckShop</p>
                             </div>
                         </div>
                     </div>

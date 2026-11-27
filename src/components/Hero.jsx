@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './styles/Hero.css';
 import { useNavigate } from 'react-router-dom';
-import { KhmerDivider, KhmerCorner, KhmerStarLantern, KhmerTevada, KhmerPhkaChan, KhmerFestivalTong } from './KhmerOrnament';
+import { KhmerDivider, KhmerCorner, KhmerTevada, KhmerPhkaChan } from './KhmerOrnament';
 import { API_BASE_URL as API_URL } from '../config/api';
 
 const Hero = () => {
@@ -41,16 +41,6 @@ const Hero = () => {
 
   return (
     <section className="hero-section khmer-bg-watermark">
-      {/* Traditional Khmer New Year Hanging Lanterns & Festive Streamers */}
-      <div className="hero-kny-lantern lantern-left" title="គោមផ្កាយ & ទង់បុណ្យចូលឆ្នាំថ្មី">
-        <KhmerStarLantern size={52} />
-        <KhmerFestivalTong />
-      </div>
-      <div className="hero-kny-lantern lantern-right" title="គោមផ្កាយ & ទង់បុណ្យចូលឆ្នាំថ្មី">
-        <KhmerStarLantern size={52} />
-        <KhmerFestivalTong />
-      </div>
-
       <div className="hero-grid-overlay"></div>
       <div className="hero-glow-orb hero-glow-1"></div>
       <div className="hero-glow-orb hero-glow-2"></div>
@@ -68,7 +58,7 @@ const Hero = () => {
             <span className="hero-title-accent">ទំនិញគ្រប់មុខ គុណភាពខ្ពស់ • ទូទាត់ KHQR &amp; ដឹកជញ្ជូនរហ័ស</span>
           </h1>
           <p className="hero-description">
-            {heroData?.description || 'សូមស្វាគមន៍មកកាន់ LuckShop (DeliciousEats)! ទីផ្សារលក់ទំនិញគ្រប់ប្រភេទតាមអនឡាញ ងាយស្រួលជ្រើសរើស តម្លៃសមរម្យ ទូទាត់ងាយស្រួលតាម Bakong KHQR ឬ ABA KHQR ជាមួយការតាមដានដឹកជញ្ជូនច្បាស់លាស់ ៣ ដំណាក់កាល!'}
+            {heroData?.description || 'សូមស្វាគមន៍មកកាន់ LuckShop! ទីផ្សារលក់ទំនិញគ្រប់ប្រភេទតាមអនឡាញ ងាយស្រួលជ្រើសរើស តម្លៃសមរម្យ ទូទាត់ងាយស្រួលតាម Bakong KHQR ឬ ABA KHQR ជាមួយការតាមដានដឹកជញ្ជូនច្បាស់លាស់ ៣ ដំណាក់កាល!'}
           </p>
 
           <KhmerDivider />

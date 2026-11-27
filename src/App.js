@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { CartProvider } from './CartContext';
 import { AuthProvider } from './AuthContext';
 import Navbar from './components/Navbar';
@@ -8,7 +8,6 @@ import Products from './components/pages/Products';
 import DetailProduct from './components/DetailProduct';
 import Footer from './components/Footer';
 import BackToTop from './components/BackToTop';
-import KhmerNewYearPetals from './components/KhmerNewYearPetals';
 import './App.css';
 import Features from './components/Feature';
 import Cart from './components/Cart';
@@ -20,7 +19,7 @@ import About from './components/About';
 import Contactpage from './components/pages/Contactpage';
 
 const ROUTE_TITLES = {
-  '/': 'LuckShop (DeliciousEats) — ហាងលក់ទំនិញគ្រប់មុខអនឡាញកម្ពុជា',
+  '/': 'LuckShop — ហាងលក់ទំនិញគ្រប់មុខអនឡាញកម្ពុជា',
   '/products': 'មុខទំនិញទាំងអស់ | LuckShop',
   '/about': 'អំពីយើង | LuckShop',
   '/features': 'លក្ខណៈពិសេស | LuckShop',
@@ -38,10 +37,63 @@ function RouteTitleUpdater() {
   useEffect(() => {
     const matchedTitle = pathname.startsWith('/products/')
       ? 'ព័ត៌មានលម្អិតទំនិញ | LuckShop'
-      : ROUTE_TITLES[pathname] || 'LuckShop (DeliciousEats) — ហាងលក់ទំនិញគ្រប់មុខអនឡាញ';
+      : ROUTE_TITLES[pathname] || 'មិនមានទំព័រនេះទេ | LuckShop';
     document.title = matchedTitle;
   }, [pathname]);
   return null;
+}
+
+function NotFoundPage() {
+  return (
+    <section
+      style={{
+        minHeight: '65vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+        padding: '3rem 1.5rem',
+        color: '#f8fafc',
+      }}
+    >
+      <div style={{ fontSize: '4rem', fontWeight: 800, color: '#ff6b35', lineHeight: 1 }}>404</div>
+      <h1 style={{ fontSize: '1.6rem', fontWeight: 700, margin: '0.75rem 0 0.5rem' }}>
+        រកមិនឃើញទំព័រនេះទេ
+      </h1>
+      <p style={{ color: '#94a3b8', maxWidth: '420px', marginBottom: '1.5rem' }}>
+        ទំព័រដែលអ្នកកំពុងស្វែងរកមិនមាន ឬត្រូវបានផ្លាស់ប្តូរទីតាំង។
+      </p>
+      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <Link
+          to="/"
+          style={{
+            padding: '10px 20px',
+            borderRadius: '10px',
+            background: '#ff6b35',
+            color: '#fff',
+            fontWeight: 600,
+            textDecoration: 'none',
+          }}
+        >
+          ត្រឡប់ទៅទំព័រដើម
+        </Link>
+        <Link
+          to="/products"
+          style={{
+            padding: '10px 20px',
+            borderRadius: '10px',
+            border: '1px solid rgba(255,255,255,0.2)',
+            color: '#e2e8f0',
+            fontWeight: 600,
+            textDecoration: 'none',
+          }}
+        >
+          មើលមុខទំនិញទាំងអស់
+        </Link>
+      </div>
+    </section>
+  );
 }
 
 function App() {
@@ -51,7 +103,6 @@ function App() {
         <Router>
           <RouteTitleUpdater />
           <div className="app">
-            <KhmerNewYearPetals />
             <Navbar />
             <div className="main-content">
               <Routes>
@@ -67,6 +118,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Login />} />
                 <Route path="/account" element={<Account />} />
+                <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </div>
             <Footer />

@@ -145,7 +145,7 @@ const DetailProduct = () => {
     );
   }
 
-  const defaultImg = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500";
+  const defaultImg = "/logo512.png";
   const mainImgUrl = product.image
     ? (product.image.startsWith('http')
       ? product.image

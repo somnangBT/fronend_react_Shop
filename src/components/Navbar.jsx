@@ -126,7 +126,7 @@ const Navbar = () => {
       <div className="nav-container">
         {/* Brand Logo */}
         <div className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Link to="/" className="brand-logo-link" title="DeliciousEats - LuckShop">
+          <Link to="/" className="brand-logo-link" title="LuckShop">
             <img
               src="/logo192.png"
               alt="LuckShop Logo"
