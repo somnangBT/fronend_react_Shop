@@ -155,10 +155,28 @@ const Login = () => {
         id: data.user.id,
         email: data.user.email || '',
         phone: data.user.phone || '',
+        address: data.user.address || '',
+        saved_delivery: data.user.saved_delivery || null,
         name: data.user.name,
         role: data.user.role || 'user',
         token: data.access_token
       };
+
+      if (data.user.saved_delivery) {
+        try {
+          const savedKey = `luckshop_saved_delivery_v1_${data.user.id || data.user.email || 'guest'}`;
+          const existingRaw = localStorage.getItem(savedKey);
+          const existing = existingRaw ? JSON.parse(existingRaw) : {};
+          localStorage.setItem(savedKey, JSON.stringify({
+            customerName: existing.customerName || data.user.saved_delivery.customer_name || data.user.name || '',
+            phone: existing.phone || data.user.saved_delivery.phone || data.user.phone || '',
+            shippingAddress: existing.shippingAddress || data.user.saved_delivery.shipping_address || data.user.address || '',
+            notes: existing.notes || '',
+            paymentMethod: existing.paymentMethod || (data.user.saved_delivery.payment_method === 'cash' ? 'cash' : 'khqr'),
+            khqrProvider: existing.khqrProvider || (data.user.saved_delivery.payment_method === 'aba_khqr' ? 'aba' : 'bakong'),
+          }));
+        } catch (_) {}
+      }
 
       login(userData);
 

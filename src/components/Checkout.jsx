@@ -20,6 +20,17 @@ import "./styles/Checkout.css";
 const CHECKOUT_DRAFT_KEY = 'luckshop_checkout_draft_v1';
 const CHECKOUT_COMPLETED_KEY = 'luckshop_checkout_completed_v1';
 
+const getSavedDeliveryKey = (u) => `luckshop_saved_delivery_v1_${u?.id || u?.email || 'guest'}`;
+
+const readSavedDelivery = (u) => {
+  try {
+    const raw = localStorage.getItem(getSavedDeliveryKey(u));
+    return raw ? JSON.parse(raw) : null;
+  } catch (_) {
+    return null;
+  }
+};
+
 const readSessionState = (key) => {
   try {
     const raw = sessionStorage.getItem(key);
@@ -31,9 +42,10 @@ const readSessionState = (key) => {
 
 const Checkout = () => {
   const { cartItems, cartCount, clearCart, subtotal, taxes, shipping, discount, total, promoCode } = useCart();
-  const { user } = useAuth();
+  const { user, login: syncAuthUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [savedProfile] = useState(() => readSavedDelivery(user));
   const [restoredState] = useState(() => {
     const savedCompleted = readSessionState(CHECKOUT_COMPLETED_KEY);
     if (savedCompleted?.orderComplete && savedCompleted?.orderId && cartCount === 0) {
@@ -51,11 +63,19 @@ const Checkout = () => {
 
   // Payment method: 'khqr' (default) or 'cash'
   const [paymentMethod, setPaymentMethod] = useState(
-    () => restoredState.completed?.paymentMethod || restoredState.draft?.paymentMethod || 'khqr'
+    () =>
+      restoredState.completed?.paymentMethod ||
+      restoredState.draft?.paymentMethod ||
+      savedProfile?.paymentMethod ||
+      (user?.saved_delivery?.payment_method === 'cash' ? 'cash' : 'khqr')
   );
   // KHQR Sub-Provider: 'bakong' (Default Auto-Verify) or 'aba' (Direct ABA 007 842 694)
   const [khqrProvider, setKhqrProvider] = useState(
-    () => restoredState.completed?.khqrProvider || restoredState.draft?.khqrProvider || 'bakong'
+    () =>
+      restoredState.completed?.khqrProvider ||
+      restoredState.draft?.khqrProvider ||
+      savedProfile?.khqrProvider ||
+      (user?.saved_delivery?.payment_method === 'aba_khqr' ? 'aba' : 'bakong')
   );
   const [slipFile, setSlipFile] = useState(null);
   const [slipPreview, setSlipPreview] = useState(null);
@@ -76,27 +96,165 @@ const Checkout = () => {
   const [transferRef, setTransferRef] = useState(() => restoredState.draft?.transferRef || '');
   const [paidClaimed, setPaidClaimed] = useState(() => Boolean(restoredState.draft?.paidClaimed));
   const [customerName, setCustomerName] = useState(
-    () => restoredState.draft?.customerName ?? (user?.name || user?.email?.split('@')[0] || '')
+    () =>
+      restoredState.draft?.customerName ??
+      savedProfile?.customerName ??
+      user?.saved_delivery?.customer_name ??
+      (user?.name || user?.email?.split('@')[0] || '')
   );
-  const [phone, setPhone] = useState(() => restoredState.draft?.phone ?? (user?.phone || ''));
+  const [phone, setPhone] = useState(
+    () =>
+      restoredState.draft?.phone ??
+      savedProfile?.phone ??
+      user?.saved_delivery?.phone ??
+      (user?.phone || '')
+  );
   const [shippingAddress, setShippingAddress] = useState(
-    () => restoredState.draft?.shippingAddress ?? (user?.address || '')
+    () =>
+      restoredState.draft?.shippingAddress ??
+      savedProfile?.shippingAddress ??
+      user?.saved_delivery?.shipping_address ??
+      (user?.address || '')
   );
-  const [notes, setNotes] = useState(() => restoredState.draft?.notes ?? '');
+  const [notes, setNotes] = useState(() => restoredState.draft?.notes ?? savedProfile?.notes ?? '');
+  const [editingDelivery, setEditingDelivery] = useState(() => {
+    const n = restoredState.draft?.customerName ?? savedProfile?.customerName ?? user?.saved_delivery?.customer_name ?? user?.name ?? '';
+    const p = restoredState.draft?.phone ?? savedProfile?.phone ?? user?.saved_delivery?.phone ?? user?.phone ?? '';
+    const a = restoredState.draft?.shippingAddress ?? savedProfile?.shippingAddress ?? user?.saved_delivery?.shipping_address ?? user?.address ?? '';
+    const valid = Boolean(String(n).trim() && String(p).replace(/[^0-9+]/g, '').length >= 8 && String(a).trim().length >= 3);
+    return !valid;
+  });
   const autoSubmittedMd5Ref = useRef(null);
-
-  // Fill empty delivery fields from user profile once available
-  useEffect(() => {
-    if (!user) return;
-    setCustomerName((prev) => prev || user.name || user.email?.split('@')[0] || '');
-    setPhone((prev) => prev || user.phone || '');
-    setShippingAddress((prev) => prev || user.address || '');
-  }, [user]);
+  const userToggledEditRef = useRef(false);
+  const fetchedHistoryRef = useRef(false);
 
   const cleanedPhone = phone.replace(/[^0-9+]/g, '');
   const isDeliveryValid = Boolean(
     customerName.trim() && cleanedPhone.length >= 8 && shippingAddress.trim().length >= 3
   );
+
+  const persistDeliveryProfile = (overrides = {}) => {
+    if (!user) return;
+    const payload = {
+      customerName: overrides.customerName ?? customerName.trim(),
+      phone: overrides.phone ?? phone.trim(),
+      shippingAddress: overrides.shippingAddress ?? shippingAddress.trim(),
+      notes: overrides.notes ?? notes.trim(),
+      paymentMethod: overrides.paymentMethod ?? paymentMethod,
+      khqrProvider: overrides.khqrProvider ?? khqrProvider,
+      updatedAt: Date.now(),
+    };
+    if (!payload.customerName || payload.phone.replace(/[^0-9+]/g, '').length < 8 || payload.shippingAddress.length < 3) {
+      return;
+    }
+    try {
+      localStorage.setItem(getSavedDeliveryKey(user), JSON.stringify(payload));
+      const updatedUser = {
+        ...user,
+        phone: payload.phone || user.phone,
+        address: payload.shippingAddress || user.address,
+        saved_delivery: {
+          customer_name: payload.customerName,
+          phone: payload.phone,
+          shipping_address: payload.shippingAddress,
+          payment_method: payload.paymentMethod === 'cash' ? 'cash' : (payload.khqrProvider === 'aba' ? 'aba_khqr' : 'khqr'),
+        },
+      };
+      if (localStorage.getItem('user')) {
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      } else if (sessionStorage.getItem('user')) {
+        sessionStorage.setItem('user', JSON.stringify(updatedUser));
+      }
+      if (typeof syncAuthUser === 'function') {
+        syncAuthUser(updatedUser);
+      }
+    } catch (_) {}
+  };
+
+  // Fill empty delivery fields from localStorage / user profile once available
+  useEffect(() => {
+    if (!user) return;
+    const latestSaved = readSavedDelivery(user);
+    const nextName = customerName || latestSaved?.customerName || user.saved_delivery?.customer_name || user.name || user.email?.split('@')[0] || '';
+    const nextPhone = phone || latestSaved?.phone || user.saved_delivery?.phone || user.phone || '';
+    const nextAddr = shippingAddress || latestSaved?.shippingAddress || user.saved_delivery?.shipping_address || user.address || '';
+
+    if (nextName !== customerName) setCustomerName(nextName);
+    if (nextPhone !== phone) setPhone(nextPhone);
+    if (nextAddr !== shippingAddress) setShippingAddress(nextAddr);
+
+    const hasValidInfo = Boolean(nextName.trim() && nextPhone.replace(/[^0-9+]/g, '').length >= 8 && nextAddr.trim().length >= 3);
+    if (hasValidInfo && !userToggledEditRef.current) {
+      setEditingDelivery(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  // If still missing phone or address on a new browser/device, auto-fill from user's most recent order
+  useEffect(() => {
+    if (!user?.token || user.token === 'token_placeholder' || fetchedHistoryRef.current) return;
+    if (customerName.trim() && cleanedPhone.length >= 8 && shippingAddress.trim().length >= 3) return;
+
+    fetchedHistoryRef.current = true;
+    const fetchSavedFromPastOrders = async () => {
+      try {
+        const params = new URLSearchParams();
+        if (user.id) params.append('user_id', user.id);
+        if (user.email) params.append('email', user.email);
+        const res = await fetch(`${API_BASE_URL}/api/orders?${params.toString()}`, {
+          headers: { Accept: 'application/json', Authorization: `Bearer ${user.token}` },
+        });
+        if (!res.ok) return;
+        const json = await res.json();
+        const list = Array.isArray(json.data) ? json.data : (Array.isArray(json.data?.data) ? json.data.data : []);
+        const prev = list.find((o) => o && o.shipping_address && o.phone);
+        if (!prev) return;
+
+        const filledName = customerName.trim() || prev.customer_name || user.name || '';
+        const filledPhone = phone.trim() || prev.phone || '';
+        const filledAddr = shippingAddress.trim() || prev.shipping_address || '';
+
+        if (filledName && !customerName.trim()) setCustomerName(filledName);
+        if (filledPhone && !phone.trim()) setPhone(filledPhone);
+        if (filledAddr && !shippingAddress.trim()) setShippingAddress(filledAddr);
+        if (prev.payment_method === 'cash') setPaymentMethod('cash');
+        else if (prev.payment_method === 'aba_khqr') { setPaymentMethod('khqr'); setKhqrProvider('aba'); }
+
+        if (filledName.trim() && filledPhone.replace(/[^0-9+]/g, '').length >= 8 && filledAddr.trim().length >= 3) {
+          persistDeliveryProfile({
+            customerName: filledName.trim(),
+            phone: filledPhone.trim(),
+            shippingAddress: filledAddr.trim(),
+          });
+          if (!userToggledEditRef.current) {
+            setEditingDelivery(false);
+          }
+        }
+      } catch (_) {}
+    };
+
+    fetchSavedFromPastOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, user?.token]);
+
+  // Auto-save valid delivery details cleanly to localStorage so user never re-types them next visit
+  useEffect(() => {
+    if (!isDeliveryValid || !user) return;
+    try {
+      localStorage.setItem(
+        getSavedDeliveryKey(user),
+        JSON.stringify({
+          customerName: customerName.trim(),
+          phone: phone.trim(),
+          shippingAddress: shippingAddress.trim(),
+          notes: notes.trim(),
+          paymentMethod,
+          khqrProvider,
+          updatedAt: Date.now(),
+        })
+      );
+    } catch (_) {}
+  }, [isDeliveryValid, customerName, phone, shippingAddress, notes, paymentMethod, khqrProvider, user]);
 
   const playPaidChime = () => {
     try {
@@ -507,6 +665,7 @@ const Checkout = () => {
           setBakongRef(resolvedBakongRef);
         }
         setPaidPopup(null);
+        persistDeliveryProfile();
         setOrderComplete(true);
         clearCart();
         showNotification('🎉 ការបញ្ជាទិញបានជោគជ័យ! សូមអរគុណ។', 'success');
@@ -667,14 +826,92 @@ const Checkout = () => {
         )}
 
         <div className="checkout-card">
-          {/* Section 1: Customer Delivery Info */}
+          {/* Section 1: Customer Delivery Info (Auto-filled & ready to pay for returning users) */}
           <div className="checkout-info-card">
-            <div className="info-card-header">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
-                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-              </svg>
-              <span>ព័ត៌មានអ្នកទទួល & ទីតាំងដឹកជញ្ជូន</span>
+            <div className="info-card-header" style={{ justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
+                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                </svg>
+                <span>ព័ត៌មានអ្នកទទួល & ទីតាំងដឹកជញ្ជូន</span>
+              </div>
+              {isDeliveryValid && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {!editingDelivery && (
+                    <span
+                      style={{
+                        fontSize: '0.74rem',
+                        fontWeight: 700,
+                        padding: '3px 10px',
+                        borderRadius: '999px',
+                        background: 'rgba(16, 185, 129, 0.16)',
+                        color: '#6ee7b7',
+                        border: '1px solid rgba(16, 185, 129, 0.35)',
+                      }}
+                    >
+                      ✓ រក្សាទុករួច • ទូទាត់បានភ្លាម
+                    </span>
+                  )}
+                  {!paidVerified && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        userToggledEditRef.current = true;
+                        if (editingDelivery) {
+                          persistDeliveryProfile();
+                        }
+                        setEditingDelivery((prev) => !prev);
+                      }}
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.08)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        color: '#e2e8f0',
+                        borderRadius: '8px',
+                        padding: '4px 10px',
+                        fontSize: '0.78rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {editingDelivery ? '✓ រួចរាល់' : '✏️ កែប្រែ'}
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
+
+            {isDeliveryValid && !editingDelivery ? (
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                  gap: '12px',
+                  padding: '12px 14px',
+                  borderRadius: '12px',
+                  background: 'rgba(15, 23, 42, 0.55)',
+                  border: '1px solid rgba(16, 185, 129, 0.28)',
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>ឈ្មោះអ្នកទទួល</div>
+                  <div style={{ fontSize: '0.94rem', fontWeight: 700, color: '#f8fafc', marginTop: '2px' }}>{customerName}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>លេខទូរស័ព្ទ</div>
+                  <div style={{ fontSize: '0.94rem', fontWeight: 700, color: '#f8fafc', marginTop: '2px', fontFamily: 'monospace' }}>{phone}</div>
+                </div>
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>អាសយដ្ឋានដឹកជញ្ជូន</div>
+                  <div style={{ fontSize: '0.92rem', color: '#e2e8f0', marginTop: '2px' }}>{shippingAddress}</div>
+                </div>
+                {notes.trim() && (
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>ចំណាំបន្ថែម</div>
+                    <div style={{ fontSize: '0.86rem', color: '#cbd5e1', marginTop: '2px' }}>{notes}</div>
+                  </div>
+                )}
+              </div>
+            ) : (
             <div className="info-card-grid">
               <div className="info-item" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '6px' }}>
                 <label className="info-label" htmlFor="checkout-name">ឈ្មោះអ្នកទទួល *</label>
@@ -760,7 +997,33 @@ const Checkout = () => {
                   }}
                 />
               </div>
+              {isDeliveryValid && (
+                <div className="info-item full-width" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      userToggledEditRef.current = true;
+                      persistDeliveryProfile();
+                      setEditingDelivery(false);
+                      showNotification('✓ បានរក្សាទុកព័ត៌មានដឹកជញ្ជូនរួចរាល់!', 'success');
+                    }}
+                    style={{
+                      background: 'linear-gradient(135deg, #10b981, #059669)',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '10px',
+                      padding: '8px 16px',
+                      fontSize: '0.85rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    ✓ រក្សាទុក &amp; បន្តទូទាត់
+                  </button>
+                </div>
+              )}
             </div>
+            )}
           </div>
 
           {/* Section 2: Order Summary */}
