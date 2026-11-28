@@ -829,13 +829,15 @@
   bottom: -80px;
   left: 50%;
   transform: translateX(-50%);
+  max-width: min(420px, calc(100vw - 32px));
+  text-align: center;
   background: var(--neon-green);
   color: var(--dark-bg);
   padding: 1rem 2rem;
   border-radius: var(--border-radius);
   box-shadow: var(--glow-green);
   font-weight: 600;
-  z-index: 1000;
+  z-index: 10050;
   transition: var(--transition-normal);
 }
 

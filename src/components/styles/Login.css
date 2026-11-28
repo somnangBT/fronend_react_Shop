@@ -521,18 +521,19 @@ input:focus ~ .input-focus-effect {
 /* Login notification */
 .login-notification {
   position: fixed;
-  top: -100px;
+  top: -120px;
   right: 20px;
+  max-width: min(380px, calc(100vw - 32px));
   padding: 1rem 1.5rem;
   border-radius: var(--border-radius);
   font-size: 0.9rem;
   font-weight: 600;
-  z-index: 1000;
+  z-index: 10050;
   transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .login-notification.show {
-  top: 100px;
+  top: 96px;
 }
 
 .login-notification.success {

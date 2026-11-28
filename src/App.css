@@ -52,3 +52,30 @@
 
 
 
+
+/* Global notification fallback positioned cleanly below fixed navbar */
+.notification {
+  position: fixed;
+  top: 96px;
+  right: 20px;
+  max-width: min(380px, calc(100vw - 32px));
+  padding: 0.95rem 1.35rem;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.96);
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-left: 4px solid #38bdf8;
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.45);
+  z-index: 10050;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.28s ease;
+}
+
+.notification.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.notification.success { border-left-color: #10b981; }
+.notification.error { border-left-color: #f43f5e; }

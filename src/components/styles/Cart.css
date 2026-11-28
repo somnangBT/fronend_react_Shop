@@ -756,18 +756,18 @@
 /* Promo notification */
 .promo-notification {
   position: fixed;
-  top: -100px;
+  top: -120px;
   right: 20px;
   padding: 1rem 1.5rem;
   border-radius: var(--border-radius);
   font-size: 0.9rem;
   font-weight: 600;
-  z-index: 1000;
+  z-index: 10050;
   transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .promo-notification.show {
-  top: 120px;
+  top: 96px;
 }
 
 .promo-notification.success {
@@ -793,7 +793,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 10040;
   animation: fadeIn 0.3s ease-out;
 }
 
