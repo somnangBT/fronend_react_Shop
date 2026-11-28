@@ -12,6 +12,8 @@ const OrderHistory = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [expandedOrderId, setExpandedOrderId] = useState(null);
+  const [cancelModalOrder, setCancelModalOrder] = useState(null);
+  const [cancelling, setCancelling] = useState(false);
 
   // Get active user from context or storage
   const currentUser = authUser || (() => {
@@ -110,10 +112,21 @@ const OrderHistory = () => {
     }
   };
 
-  const handleCancelOrder = async (orderId) => {
-    if (!window.confirm('តើអ្នកពិតជាចង់បោះបង់ការបញ្ជាទិញ #' + orderId + ' នេះមែនទេ? (Are you sure you want to cancel this order?)')) {
-      return;
-    }
+  useEffect(() => {
+    if (!cancelModalOrder) return;
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape' && !cancelling) {
+        setCancelModalOrder(null);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [cancelModalOrder, cancelling]);
+
+  const confirmCancelOrder = async () => {
+    if (!cancelModalOrder || cancelling) return;
+    const orderId = cancelModalOrder.id;
+    setCancelling(true);
 
     try {
       const headers = {
@@ -141,6 +154,7 @@ const OrderHistory = () => {
             order.id === orderId ? { ...order, status: 'cancelled' } : order
           )
         );
+        setCancelModalOrder(null);
         showNotification('បានបោះបង់ការបញ្ជាទិញជោគជ័យ! (Order cancelled)', 'success');
       } else {
         throw new Error(result.message || 'Failed to cancel order');
@@ -148,6 +162,8 @@ const OrderHistory = () => {
     } catch (err) {
       console.error('Error cancelling order:', err);
       showNotification(err.message || 'មិនអាចបោះបង់ការបញ្ជាទិញបានទេ', 'error');
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -257,7 +273,7 @@ const OrderHistory = () => {
                       {order.status === 'pending' && (
                         <button
                           className="cancel-order-btn"
-                          onClick={() => handleCancelOrder(order.id)}
+                          onClick={() => setCancelModalOrder(order)}
                           title="បោះបង់ការបញ្ជាទិញនេះ"
                         >
                           បោះបង់
@@ -424,6 +440,46 @@ const OrderHistory = () => {
           </div>
         )}
       </div>
+
+      {/* Cancel Order Confirmation Modal */}
+      {cancelModalOrder && (
+        <div
+          className="order-confirm-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => !cancelling && setCancelModalOrder(null)}
+        >
+          <div className="order-confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="order-confirm-icon">!</div>
+            <h3 className="order-confirm-title">បញ្ជាក់ការបោះបង់ការបញ្ជាទិញ</h3>
+            <p className="order-confirm-message">
+              តើអ្នកពិតជាចង់បោះបង់ការបញ្ជាទិញ <strong>#{cancelModalOrder.id}</strong> (ទឹកប្រាក់ $
+              {parseFloat(cancelModalOrder.total || 0).toFixed(2)}) នេះមែនទេ?
+            </p>
+            <p className="order-confirm-hint">
+              សកម្មភាពនេះមិនអាចត្រឡប់ក្រោយវិញបានទេ។
+            </p>
+            <div className="order-confirm-actions">
+              <button
+                type="button"
+                className="order-confirm-cancel"
+                disabled={cancelling}
+                onClick={() => setCancelModalOrder(null)}
+              >
+                រក្សាទុក (Keep)
+              </button>
+              <button
+                type="button"
+                className="order-confirm-submit"
+                disabled={cancelling}
+                onClick={confirmCancelOrder}
+              >
+                {cancelling ? 'កំពុងបោះបង់...' : 'បាទ/ចាស បោះបង់'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
